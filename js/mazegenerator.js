@@ -1,6 +1,6 @@
-const MAZE_DIMENSION = 200; // in cells
+const MAZE_DIMENSION = 100; // in cells
 
-const CELL_LENGTH = 10; // in px
+const CELL_LENGTH = 50; // in px
 const TIME_PER_CELL_MS = 70;
 
 const USER_COLOR = "red";
@@ -26,6 +26,9 @@ var originalLocation = {x:0, y:0};
 var objectiveCell;
 var cols;
 var rows;
+
+var frameRadiusX;
+var frameRadiusY;
 
 var stepsTaken = 0;
 var optimalPath = 0;
@@ -54,9 +57,13 @@ function Cell(type, x, y, color) {
         this.color = OBSTACLE_COLOR;
     }
 
-    this.draw = function(drawColor = this.color) {
+    this.draw = function(drawColor = this.color, xmod = this.x, ymod = this.y) {
         ctx.fillStyle = drawColor;
-        ctx.fillRect(this.x * CELL_LENGTH, this.y * CELL_LENGTH, CELL_LENGTH, CELL_LENGTH);
+        ctx.fillRect(xmod * CELL_LENGTH, ymod * CELL_LENGTH, CELL_LENGTH, CELL_LENGTH);
+    }
+
+    this.drawAt = function(x, y, drawColor = this.color) {
+        this.draw(drawColor, x, y);
     }
 }
 
@@ -69,8 +76,13 @@ function getCellAtUserLocation() {
 }
 
 function updateCanvasSize() {
-    canvas.width = CELL_LENGTH * cols;
-    canvas.height = CELL_LENGTH * rows;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var cellsX = Math.ceil(canvas.width / CELL_LENGTH);
+    var cellsY = Math.ceil(canvas.height / CELL_LENGTH);
+    frameRadiusX = Math.ceil(cellsX / 2);
+    frameRadiusY = Math.ceil(cellsY / 2);
 }
 
 /*
@@ -262,16 +274,29 @@ function generateMaze() {
 
 // Draw the entire maze in the default color
 function drawMaze() {
-    for(var row=0; row<rows; row++) {
-        for(var col=0; col<cols; col++) {
-            maze[row][col].draw();
+
+    var rowStart = userLocation.y - frameRadiusY;
+    if (rowStart < 0) rowStart = 0;
+    var colStart = userLocation.x - frameRadiusX;
+    if (colStart < 0) colStart = 0;
+
+    var rowEnd = userLocation.y + frameRadiusY;
+    if (rowEnd >= rows) rowEnd = rows - 1;
+    var colEnd = userLocation.x + frameRadiusX;
+    if (colEnd >= cols) colEnd = cols - 1;
+
+    for(var row=rowStart; row<=rowEnd; row++) {
+        for(var col=colStart; col<=colEnd; col++) {
+
+            var x = (col - userLocation.x) + frameRadiusX;
+            var y = (row - userLocation.y) + frameRadiusY;
+
+            if(userLocation.x == col && userLocation.y == row)
+                maze[row][col].drawAt(x, y, USER_COLOR);
+            else
+                maze[row][col].drawAt(x, y);
         }
     }
-}
-
-// Redraw the player in the normal player color
-function updateDrawnPlayerPosition() {
-    getCellAtUserLocation().draw(USER_COLOR);
 }
 
 // Redraw the player's current position in the default color
@@ -310,8 +335,6 @@ function reactToUserInput() {
             stepsTaken++;
             oldCell.draw("orange");
 
-            // TODO: make trail darken upon backtracking
-
             // Player reached the objective
             if(newCell.isObjective()) {
                 var message = "Congratulations, you solved the maze!";
@@ -321,8 +344,8 @@ function reactToUserInput() {
             }
         }
 
-        // Draw player at new position
-        updateDrawnPlayerPosition();
+        // Redraw canvas
+        drawMaze();
     }
 
     // Call this function again in TIME_PER_CELL_MS
@@ -358,7 +381,6 @@ function remakeMaze() {
     maze = generateMaze();
 
     drawMaze();
-    updateDrawnPlayerPosition();
 
     // Solve the maze in order to get the optimal number of steps
     // Function automatically changes optimalPath to the optimal number of steps
@@ -430,10 +452,8 @@ function onKeyUp(event) {
     }
 }
 
-// Add event listeners to the various buttons and fields on the page
+// Add event listeners for moving about the maze
 function addEventListeners() {
-
-    // Add event listeners for moving about the maze
     window.addEventListener("keydown", onKeyDown, false);
     window.addEventListener("keyup", onKeyUp, false);
 }
