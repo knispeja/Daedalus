@@ -1,7 +1,8 @@
 const MAZE_DIMENSION = 100; // in cells
 
 const CELL_LENGTH = 50; // in px
-const TIME_PER_CELL_MS = 70;
+const USER_INPUT_WAIT_MS = 10;
+const TIME_PER_DRAW_CYCLE_MS = 5;
 
 const USER_COLOR = "red";
 const OBSTACLE_COLOR = "black";
@@ -11,6 +12,8 @@ const OBJECTIVE_COLOR = "lime";
 const OBSTACLE_CELL = "obstacle";
 const EMPTY_CELL = "empty";
 const OBJECTIVE_CELL = "objective";
+
+const INTERPOLATION_INCREMENT = 2; // in px
 
 var canvas;
 var ctx;
@@ -32,6 +35,8 @@ var frameRadiusY;
 
 var stepsTaken = 0;
 var optimalPath = 0;
+
+var interpOffset = {x:0, y:0, mag:0};
 
 function Cell(type, x, y, color) {
     this.type = type;
@@ -59,7 +64,12 @@ function Cell(type, x, y, color) {
 
     this.draw = function(drawColor = this.color, xmod = this.x, ymod = this.y) {
         ctx.fillStyle = drawColor;
-        ctx.fillRect(xmod * CELL_LENGTH, ymod * CELL_LENGTH, CELL_LENGTH, CELL_LENGTH);
+        ctx.fillRect(
+                xmod * CELL_LENGTH + (interpOffset.x * interpOffset.mag), 
+                ymod * CELL_LENGTH + (interpOffset.y * interpOffset.mag), 
+                CELL_LENGTH, 
+                CELL_LENGTH
+            );
     }
 
     this.drawAt = function(x, y, drawColor = this.color) {
@@ -251,14 +261,9 @@ function generateMaze() {
     generateMazeKruskal(newMaze);
     //generateMazeRecursiveBacktracking(newMaze);
 
-    // Place starting point along west wall
-    for(var row=1; row<rows; row++) {
-        if(newMaze[row][1].isEmpty()) {
-            userLocation = {x: 1, y:row};
-            originalLocation = userLocation;
-            break;
-        }
-    }
+    // Place starting point in the center
+    userDim = Math.ceil(MAZE_DIMENSION/2);
+    userLocation = {x: userDim, y: userDim};
     
     // Place objective along east wall
     for(var row=rows-2; row>=0; row--) {
@@ -272,8 +277,30 @@ function generateMaze() {
     return newMaze;
 }
 
-// Draw the entire maze in the default color
-function drawMaze() {
+// Only pass frameKey/old user position if interpolation is desired
+function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCount = 0) {
+
+    if(recurseCount == 0) {
+        var offX, offY;
+        if (oldUserLocation.x == userLocation.x) offX = 0;
+        else if (oldUserLocation.x > userLocation.x) offX = -1;
+        else offX = 1;
+
+        if (oldUserLocation.y == userLocation.y) offY = 0;
+        else if (oldUserLocation.y > userLocation.y) offY = -1;
+        else offY = 1;
+
+        interpOffset = {x: offX, y: offY, mag: CELL_LENGTH};
+    }
+
+    if(interpolate) {
+        interpOffset.mag -= INTERPOLATION_INCREMENT;
+        if (interpOffset.mag < 0) {
+            interpOffset.mag = 0;
+            reactToUserInput();
+            return;
+        }
+    }
 
     var rowStart = userLocation.y - frameRadiusY;
     if (rowStart < 0) rowStart = 0;
@@ -297,21 +324,21 @@ function drawMaze() {
                 maze[row][col].drawAt(x, y);
         }
     }
+
+    if (interpolate) {
+        setTimeout(function() {
+            drawMaze(true, oldUserLocation, recurseCount + 1);
+        }, TIME_PER_DRAW_CYCLE_MS);
+    }
 }
 
-// Redraw the player's current position in the default color
-function clearDrawnPlayerPosition() {
-    getCellAtUserLocation().draw();
-}
-
-// Runs every TIME_PER_CELL_MS, so needs to be fast
+// Runs every USER_INPUT_WAIT_MS, so needs to be fast
 function reactToUserInput() {
 
     // Ignore conflicting input
     if(!((up && down) || (left && right))) {
         
-        // Remove player from old position
-        clearDrawnPlayerPosition();
+        var oldLocation = {x:userLocation.x, y:userLocation.y};
 
         var oldCell = getCellAtUserLocation();
         var newCell;
@@ -331,9 +358,8 @@ function reactToUserInput() {
         // Player moved to a valid space
         if(newCell && !newCell.isObstacle() && !newCell.equals(oldCell)) {
 
-            // Update steps and leave a trail behind
+            // Update steps
             stepsTaken++;
-            oldCell.draw("orange");
 
             // Player reached the objective
             if(newCell.isObjective()) {
@@ -344,12 +370,13 @@ function reactToUserInput() {
             }
         }
 
-        // Redraw canvas
-        drawMaze();
+        // Redraw canvas with interpolation
+        drawMaze(true, oldLocation, 0);
+        return; // drawMaze will call this function when it's done
     }
 
-    // Call this function again in TIME_PER_CELL_MS
-    setTimeout(reactToUserInput, TIME_PER_CELL_MS);
+    // Call this function again in USER_INPUT_WAIT_MS
+    setTimeout(reactToUserInput, USER_INPUT_WAIT_MS);
 }
 
 function resetMaze(redraw = true) {
