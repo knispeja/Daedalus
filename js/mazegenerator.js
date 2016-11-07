@@ -62,18 +62,22 @@ function Cell(type, x, y, color) {
         this.color = OBSTACLE_COLOR;
     }
 
-    this.draw = function(drawColor = this.color, xmod = this.x, ymod = this.y) {
+    this.draw = function(drawColor = this.color, xmod = this.x, ymod = this.y, noOffset = false) {
         ctx.fillStyle = drawColor;
+
+        var xOff = noOffset ? 0 : (interpOffset.x * interpOffset.mag);
+        var yOff = noOffset ? 0 : (interpOffset.y * interpOffset.mag);
+
         ctx.fillRect(
-                xmod * CELL_LENGTH + (interpOffset.x * interpOffset.mag), 
-                ymod * CELL_LENGTH + (interpOffset.y * interpOffset.mag), 
+                xmod * CELL_LENGTH + xOff, 
+                ymod * CELL_LENGTH + yOff, 
                 CELL_LENGTH, 
                 CELL_LENGTH
             );
     }
 
-    this.drawAt = function(x, y, drawColor = this.color) {
-        this.draw(drawColor, x, y);
+    this.drawAt = function(x, y, drawColor = this.color, noOffset = false) {
+        this.draw(drawColor, x, y, noOffset);
     }
 }
 
@@ -319,11 +323,12 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
             var y = (row - userLocation.y) + frameRadiusY;
 
             if(userLocation.x == col && userLocation.y == row)
-                maze[row][col].drawAt(x, y, USER_COLOR);
+                var drawLast = {x: x, y: y, cell: maze[row][col]};
             else
                 maze[row][col].drawAt(x, y);
         }
     }
+    drawLast.cell.drawAt(drawLast.x, drawLast.y, USER_COLOR, true)
 
     if (interpolate) {
         setTimeout(function() {
@@ -338,6 +343,8 @@ function reactToUserInput() {
     // Ignore conflicting input
     if(!((up && down) || (left && right))) {
         
+        var needsRedraw = false;
+
         var oldLocation = {x:userLocation.x, y:userLocation.y};
 
         var oldCell = getCellAtUserLocation();
@@ -358,6 +365,8 @@ function reactToUserInput() {
         // Player moved to a valid space
         if(newCell && !newCell.isObstacle() && !newCell.equals(oldCell)) {
 
+            needsRedraw = true;
+
             // Update steps
             stepsTaken++;
 
@@ -370,9 +379,11 @@ function reactToUserInput() {
             }
         }
 
-        // Redraw canvas with interpolation
-        drawMaze(true, oldLocation, 0);
-        return; // drawMaze will call this function when it's done
+        if(needsRedraw) {
+            // Redraw canvas with interpolation
+            drawMaze(true, oldLocation, 0);
+            return; // drawMaze will call this function when it's done
+        }
     }
 
     // Call this function again in USER_INPUT_WAIT_MS
