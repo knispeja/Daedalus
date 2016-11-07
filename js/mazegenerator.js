@@ -2,7 +2,7 @@ const MAZE_DIMENSION = 100; // in cells
 
 const CELL_LENGTH = 50; // in px
 const USER_INPUT_WAIT_MS = 10;
-const TIME_PER_DRAW_CYCLE_MS = 5;
+const TIME_PER_DRAW_CYCLE_MS = 0;
 
 const USER_COLOR = "red";
 const OBSTACLE_COLOR = "black";
@@ -13,7 +13,7 @@ const OBSTACLE_CELL = "obstacle";
 const EMPTY_CELL = "empty";
 const OBJECTIVE_CELL = "objective";
 
-const INTERPOLATION_INCREMENT = 2; // in px
+const INTERPOLATION_INCREMENT = 1.5; // in px
 
 var canvas;
 var ctx;
@@ -89,7 +89,7 @@ function getCellAtUserLocation() {
     return maze[userLocation.y][userLocation.x];
 }
 
-function updateCanvasSize() {
+function updateCanvasSize(redraw = true) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -97,6 +97,8 @@ function updateCanvasSize() {
     var cellsY = Math.ceil(canvas.height / CELL_LENGTH);
     frameRadiusX = Math.ceil(cellsX / 2);
     frameRadiusY = Math.ceil(cellsY / 2);
+
+    if(redraw) drawMaze();
 }
 
 /*
@@ -414,7 +416,7 @@ function remakeMaze() {
     if(rows % 2 == 0) rows++;
 
     // Generate maze and update the canvas...
-    updateCanvasSize();
+    updateCanvasSize(false);
 
     maze = generateMaze();
 
