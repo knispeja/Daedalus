@@ -17,8 +17,10 @@ var questionsLeft = TOTAL_QUESTIONS_ASKED;
 var currentQuestion;
 var nextBtn;
 var explanationDiv;
+var progressDiv;
 var nextplanationShown = true;
 var askingPhase = true;
+var numberCorrect = 0;
 
 var Question = function(text, options, answer, explanation) {
     this.text = text;
@@ -74,38 +76,25 @@ function makeMultipleChoiceQuestion(question, options, explanation="", answer=0)
     );
 }
 
-// Create the array of all questions to be asked
-var QUESTIONS = [
-    makeMultipleChoiceQuestion(
-        "Who is Talos?",
-        [
-            "An automaton",
-            "A god",
-            "A man",
-            "A serpent"
-        ],
-        "Talos is a giant bronze automaton made to protect Europa in Crete."
-    ),
-    makeMultipleChoiceQuestion(
-        "What instrument is Orpheus famous for?",
-        [
-            "The lyre",
-            "The lute",
-            "The flute",
-            "The glass harmonica"
-        ]
-    ),
-    makeTrueFalseQuestion(
-        "Zeus entered into combat with his brothers, Hades and Poseidon, for control of the heavens.",
-        FALSE,
-        "Zeus drew lots with Hades and Poseidon to decide who would get control of the heavens, and won."
-    )
-];
+function updateProgressText() {
+    var questionsAsked = TOTAL_QUESTIONS_ASKED - questionsLeft;
+    var percentCorrect = (questionsAsked == 1 ? 1 : numberCorrect*1.0/(questionsAsked - 1)) * 100;
+    progressDiv.innerHTML =
+        "Question " +
+        questionsAsked +
+        " out of " +
+        TOTAL_QUESTIONS_ASKED +
+        "&emsp;&emsp;(" +
+        percentCorrect.toFixed(0) +
+        "% correct)"
+}
 
 function displayRandomQuestion() {
     if(questionsLeft-- == 0) {
         skipToGame();
     }
+
+    updateProgressText();
 
     var i = randomIndexOf(QUESTIONS);
     currentQuestion = QUESTIONS[i];
@@ -119,8 +108,11 @@ function displayRandomQuestion() {
 function toggleNextBtnExplanationShown() {
     if(nextplanationShown)
         nextBtn.style.display = explanationDiv.style.display = HIDE;
-    else
+    else {
         nextBtn.style.display = explanationDiv.style.display = SHOW;
+
+        if(questionsLeft == 0) nextBtn.innerText = "Finish";
+    }
 
     nextplanationShown = !nextplanationShown;
 }
@@ -140,6 +132,7 @@ function selectedAnswer() {
     var indexClicked = this.id.charCodeAt(0) - MULTIPLE_CHOICE_START_CODE;
     if(indexClicked === currentQuestion.answer) {
         optionElements[indexClicked].style.backgroundColor = CORRECT_OPTION_COLOR;
+        numberCorrect++;
     } else {
         optionElements[indexClicked].style.backgroundColor = INCORRECT_OPTION_COLOR;
         optionElements[currentQuestion.answer].style.backgroundColor = CORRECT_OPTION_COLOR;
@@ -174,6 +167,7 @@ function init() {
     defaultOptionColor = optionElements[0].style.backgroundColor;
 
     nextBtn = document.getElementById("next");
+    progressDiv = document.getElementById("progress");
     explanationDiv = document.getElementById("explanation");
 
     addActionListeners();
