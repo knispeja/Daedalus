@@ -41,6 +41,14 @@ html, body {
     background-color: #714C8F;
 }
 
+#explanation {
+    text-align: right;
+    padding: 40px;
+    padding-right: 100px;
+    color: white;
+    font-size: 18pt;
+}
+
 #navcontainer {
     position: absolute;
     bottom: 0;

@@ -9,7 +9,6 @@ var TOTAL_QUESTIONS_ASKED = 10;
 var CORRECT_OPTION_COLOR = '#006400';
 var INCORRECT_OPTION_COLOR = '#7F0000';
 
-
 // Globals
 var defaultOptionColor;
 var questionElement;
@@ -17,6 +16,7 @@ var optionElements = [];
 var questionsLeft = TOTAL_QUESTIONS_ASKED;
 var currentQuestion;
 var nextBtn;
+var explanationDiv;
 var nextplanationShown = true;
 var askingPhase = true;
 
@@ -37,6 +37,7 @@ var Question = function(text, options, answer, explanation) {
             }
             optionElements[i].style.backgroundColor = defaultOptionColor;
         }
+        explanationDiv.innerHTML = this.explanation;
     }
 }
 
@@ -116,12 +117,10 @@ function displayRandomQuestion() {
 }
 
 function toggleNextBtnExplanationShown() {
-    if(nextplanationShown) {
-        nextBtn.style.display = HIDE;
-    }
-    else {
-        nextBtn.style.display = SHOW;
-    }
+    if(nextplanationShown)
+        nextBtn.style.display = explanationDiv.style.display = HIDE;
+    else
+        nextBtn.style.display = explanationDiv.style.display = SHOW;
 
     nextplanationShown = !nextplanationShown;
 }
@@ -175,6 +174,7 @@ function init() {
     defaultOptionColor = optionElements[0].style.backgroundColor;
 
     nextBtn = document.getElementById("next");
+    explanationDiv = document.getElementById("explanation");
 
     addActionListeners();
     displayRandomQuestion();
