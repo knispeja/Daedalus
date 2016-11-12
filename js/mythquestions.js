@@ -1,3 +1,8 @@
+// For use in true and false questions
+var TRUE = 0;
+var FALSE = 1;
+
+// Currently contains 10 questions
 var QUESTIONS = [
     makeMultipleChoiceQuestion(
         "Who is Talos?",
@@ -41,5 +46,39 @@ var QUESTIONS = [
             "Perseus"
         ],
         "Achilles is the son of Peleus and the nymph Thetis."
+    ),
+    makeMultipleChoiceQuestion(
+        "What woman is most often associated with Jason of the Argonauts?",
+        [
+            "Medea",
+            "Penelope",
+            "Deianeira",
+            "Clytemnestra",
+            "Helen"
+        ],
+        "Medea was made to fall in love with Jason by Aphrodite, and she helped him to obtain the Golden Fleece."
+    ),
+    makeTrueFalseQuestion(
+        "Agamemnon was killed by Aegisthus and his wife, Clytemnestra.",
+        TRUE
+    ),
+    makeMultipleChoiceQuestion(
+        "To which goddess did Paris give the apple of discord?",
+        [
+            "Aphrodite",
+            "Hera",
+            "Athena"
+        ],
+        "Aphrodite promised Paris the most beautiful woman in the world in return: Helen of Sparta."
+    ),
+    makeTrueFalseQuestion(
+        "Cronus devoured his children because immortals were delicious and he was incredibly hungry.",
+        FALSE,
+        "Cronus ate his children because a prophecy told him he would be succeeded by one of them."
+    ),
+    makeTrueFalseQuestion(
+        "Cassandra had the gift of prophecy, but nobody believed her predictions.",
+        TRUE,
+        "Apollo cursed Cassandra so because she rejected his love."
     )
 ];

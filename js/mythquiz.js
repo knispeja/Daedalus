@@ -1,6 +1,4 @@
 // Constants
-var TRUE = 0;
-var FALSE = 1;
 var SHOW = "block";
 var HIDE = "none";
 var TRUE_FALSE_OPTIONS = ['True', 'False'];
@@ -23,12 +21,18 @@ var askingPhase = true;
 var numberCorrect = 0;
 
 var Question = function(text, options, answer, explanation) {
+
     this.text = text;
     this.options = options;
     this.answer = answer;
     this.explanation = explanation;
 
     this.display = function() {
+
+        if(this.options.length > optionElements.length) {
+            console.error("Question given too many options: " + this.text);
+        }
+
         questionElement.innerHTML = this.text;
         for(var i=0; i<optionElements.length; i++) {
             if (i < options.length) {
@@ -43,7 +47,7 @@ var Question = function(text, options, answer, explanation) {
     }
 }
 
-function makeTrueFalseQuestion(question, answer, explanation) {
+function makeTrueFalseQuestion(question, answer, explanation="") {
     return new Question(
         question,
         TRUE_FALSE_OPTIONS,
@@ -78,19 +82,24 @@ function makeMultipleChoiceQuestion(question, options, explanation="", answer=0)
 
 function updateProgressText() {
     var questionsAsked = TOTAL_QUESTIONS_ASKED - questionsLeft;
-    var percentCorrect = (questionsAsked == 1 ? 1 : numberCorrect*1.0/(questionsAsked - 1)) * 100;
-    progressDiv.innerHTML =
+    var percentCorrect = numberCorrect*1.0/(questionsAsked) * 100;
+    var progressStr =
         "Question " +
-        questionsAsked +
+        (questionsAsked + 1) +
         " out of " +
-        TOTAL_QUESTIONS_ASKED +
-        "&emsp;&emsp;(" +
-        percentCorrect.toFixed(0) +
-        "% correct)"
+        TOTAL_QUESTIONS_ASKED;
+
+    if (questionsAsked > 0)
+        progressStr +=
+            "&emsp;&emsp;(" +
+            percentCorrect.toFixed(0) +
+            "% correct)";
+
+    progressDiv.innerHTML = progressStr;
 }
 
 function displayRandomQuestion() {
-    if(questionsLeft-- == 0) {
+    if(questionsLeft == 0) {
         skipToGame();
     }
 
@@ -110,7 +119,6 @@ function toggleNextBtnExplanationShown() {
         nextBtn.style.display = explanationDiv.style.display = HIDE;
     else {
         nextBtn.style.display = explanationDiv.style.display = SHOW;
-
         if(questionsLeft == 0) nextBtn.innerText = "Finish";
     }
 
@@ -127,12 +135,15 @@ function skipToGame() {
 
 function selectedAnswer() {
 
+    questionsLeft--;
+
     if(!askingPhase) return;
 
     var indexClicked = this.id.charCodeAt(0) - MULTIPLE_CHOICE_START_CODE;
     if(indexClicked === currentQuestion.answer) {
         optionElements[indexClicked].style.backgroundColor = CORRECT_OPTION_COLOR;
         numberCorrect++;
+        updateProgressText();
     } else {
         optionElements[indexClicked].style.backgroundColor = INCORRECT_OPTION_COLOR;
         optionElements[currentQuestion.answer].style.backgroundColor = CORRECT_OPTION_COLOR;
