@@ -498,9 +498,16 @@ function addEventListeners() {
     window.addEventListener("keyup", onKeyUp, false);
 }
 
-// Runs on load
-function init() {
+function hideCanvas() {
+    canvas.style.display="none";
+}
 
+function showCanvas() {
+    canvas.style.display="block";
+}
+
+// Runs on load
+function mazeGenInit() {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
 
@@ -509,4 +516,4 @@ function init() {
     reactToUserInput();
 }
 
-window.onload = init;
+window.onload = mazeGenInit;

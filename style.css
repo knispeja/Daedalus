@@ -3,4 +3,39 @@ html, body {
     height: 100%;
     margin: 0px;
     overflow-y: hidden;
+    background-color: #9476AB;
+}
+
+#container {
+    position: relative;
+    top: 18%;
+}
+
+#progress {
+    background-color: #210439;
+    padding: 14px;
+    padding-left: 25px;
+
+    font-size: 14pt;
+    color: #E9D0EA;
+}
+
+#question {
+    color: white;
+    font-size: 22pt;
+    padding: 12px;
+}
+
+.answer {
+    text-align: center;
+    font-size: 20pt;
+    color: #E9D0EA;
+    border: 2px solid #555200;
+    background-color: #381356;
+    margin: 11px;
+    padding: 14px;
+    border-radius: 5px;
+}
+.answer:hover {
+    background-color: #714C8F;
 }

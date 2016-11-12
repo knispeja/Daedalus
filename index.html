@@ -8,13 +8,21 @@
 
 	<script src="js/mazeutils.js"></script>
 
-	<script src="js/mythquestions.js"></script>
 	<script src="js/mazegenerator.js"></script>
 	<script src="js/mazesolver.js"></script>
+	<script src="js/mythquestions.js"></script>
 </head>
 
 <body onresize="updateCanvasSize()">
 	<canvas id="canvas">Your browser doesn't support canvas...</canvas>
+	<div id="progress">Question 1 out of 10</div>
+	<div id="container">
+		<div id="question">Sample question...</div>
+		<div class="answer">A. Option 1</div>
+		<div class="answer">B. Option 2</div>
+		<div class="answer">C. Option 3</div>
+		<div class="answer">D. Option 4</div>
+	</div>
 </body>
 
 </html>

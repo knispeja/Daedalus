@@ -54,5 +54,21 @@ var QUESTIONS = [
             "A serpent"
         ],
         "Talos is a giant bronze automaton made to protect Europa in Crete."
+    ),
+    makeMultipleChoiceQuestion(
+        "What instrument is Orpheus famous for?",
+        [
+            "The lyre",
+            "The lute",
+            "The flute",
+            "The glass harmonica"
+        ]
     )
-]
+];
+
+function init() {
+    mazeGenInit();
+    hideCanvas();
+}
+
+window.onload = init;
