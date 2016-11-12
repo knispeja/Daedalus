@@ -1,14 +1,24 @@
 // Constants
 var TRUE = 0;
 var FALSE = 1;
+var SHOW = "block";
+var HIDE = "none";
 var TRUE_FALSE_OPTIONS = ['True', 'False'];
 var MULTIPLE_CHOICE_START_CODE = 65; // capital a:'A'
 var TOTAL_QUESTIONS_ASKED = 10;
+var CORRECT_OPTION_COLOR = '#006400';
+var INCORRECT_OPTION_COLOR = '#7F0000';
+
 
 // Globals
+var defaultOptionColor;
 var questionElement;
 var optionElements = [];
 var questionsLeft = TOTAL_QUESTIONS_ASKED;
+var currentQuestion;
+var nextBtn;
+var nextplanationShown = true;
+var askingPhase = true;
 
 var Question = function(text, options, answer, explanation) {
     this.text = text;
@@ -21,10 +31,11 @@ var Question = function(text, options, answer, explanation) {
         for(var i=0; i<optionElements.length; i++) {
             if (i < options.length) {
                 optionElements[i].innerHTML = this.options[i];
-                optionElements[i].style.display = "block";
+                optionElements[i].style.display = SHOW;
             } else {
-                optionElements[i].style.display = "none";
+                optionElements[i].style.display = HIDE;
             }
+            optionElements[i].style.backgroundColor = defaultOptionColor;
         }
     }
 }
@@ -82,19 +93,71 @@ var QUESTIONS = [
             "The flute",
             "The glass harmonica"
         ]
+    ),
+    makeTrueFalseQuestion(
+        "Zeus entered into combat with his brothers, Hades and Poseidon, for control of the heavens.",
+        FALSE,
+        "Zeus drew lots with Hades and Poseidon to decide who would get control of the heavens, and won."
     )
 ];
 
 function displayRandomQuestion() {
     if(questionsLeft-- == 0) {
-        showCanvas();
-        return;
+        skipToGame();
     }
 
     var i = randomIndexOf(QUESTIONS);
-    var question = QUESTIONS[i];
+    currentQuestion = QUESTIONS[i];
     QUESTIONS.splice(i, 1); // remove question from list
-    question.display();
+    currentQuestion.display();
+
+    toggleNextBtnExplanationShown();
+    askingPhase = true;
+}
+
+function toggleNextBtnExplanationShown() {
+    if(nextplanationShown) {
+        nextBtn.style.display = HIDE;
+    }
+    else {
+        nextBtn.style.display = SHOW;
+    }
+
+    nextplanationShown = !nextplanationShown;
+}
+
+function skipToGame() {
+    showCanvas();
+    document.getElementById("progress").style.display = HIDE;
+    document.getElementById("container").style.display = HIDE;
+    document.getElementById("navcontainer").style.display = HIDE;
+    return;
+}
+
+function selectedAnswer() {
+
+    if(!askingPhase) return;
+
+    var indexClicked = this.id.charCodeAt(0) - MULTIPLE_CHOICE_START_CODE;
+    if(indexClicked === currentQuestion.answer) {
+        optionElements[indexClicked].style.backgroundColor = CORRECT_OPTION_COLOR;
+    } else {
+        optionElements[indexClicked].style.backgroundColor = INCORRECT_OPTION_COLOR;
+        optionElements[currentQuestion.answer].style.backgroundColor = CORRECT_OPTION_COLOR;
+    }
+
+    toggleNextBtnExplanationShown();
+
+    askingPhase = false;
+}
+
+function addActionListeners() {
+    document.getElementById("skip").onclick = skipToGame;
+    nextBtn.onclick = displayRandomQuestion;
+
+    for(var i=0; i<optionElements.length; i++) {
+        optionElements[i].onclick = selectedAnswer;
+    }
 }
 
 function init() {
@@ -109,6 +172,11 @@ function init() {
     optionElements.push(document.getElementById("D"));
     optionElements.push(document.getElementById("E"));
 
+    defaultOptionColor = optionElements[0].style.backgroundColor;
+
+    nextBtn = document.getElementById("next");
+
+    addActionListeners();
     displayRandomQuestion();
 }
 

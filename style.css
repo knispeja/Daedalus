@@ -24,6 +24,7 @@ html, body {
     color: white;
     font-size: 22pt;
     padding: 12px;
+    padding-left: 30px;
 }
 
 .answer {
@@ -38,4 +39,21 @@ html, body {
 }
 .answer:hover {
     background-color: #714C8F;
+}
+
+#navcontainer {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.nav {
+    float: right;
+    text-align: right;
+    margin: 8px;
+    padding: 8px;
+    background-color: #210439;
+    border-radius: 5px;
+    color: #9476AB;
+    font-size: 16pt;
 }
