@@ -149,6 +149,7 @@ function addActionListeners() {
 
     for(var i=0; i<optionElements.length; i++) {
         optionElements[i].onclick = selectedAnswer;
+        optionElements[i].onselectstart = function() {return false;};
     }
 }
 

@@ -39,6 +39,7 @@ html, body {
 }
 .answer:hover {
     background-color: #714C8F;
+    cursor: pointer;
 }
 
 #explanation {
@@ -64,4 +65,8 @@ html, body {
     border-radius: 5px;
     color: #9476AB;
     font-size: 16pt;
+}
+
+.nav:hover {
+    cursor: pointer;
 }
