@@ -1,8 +1,7 @@
 const MAZE_DIMENSION = 100; // in cells
 
-const CELL_LENGTH = 50; // in px
-const USER_INPUT_WAIT_MS = 10;
-const TIME_PER_DRAW_CYCLE_MS = 0;
+const CELL_LENGTH = 60; // in px
+const USER_INPUT_WAIT_MS = 5;
 
 const USER_COLOR = "red";
 const OBSTACLE_COLOR = "black";
@@ -13,7 +12,7 @@ const OBSTACLE_CELL = "obstacle";
 const EMPTY_CELL = "empty";
 const OBJECTIVE_CELL = "objective";
 
-const INTERPOLATION_INCREMENT = 1.5; // in px
+const INTERPOLATION_INCREMENT = 2; // in px
 
 var canvas;
 var ctx;
@@ -286,6 +285,9 @@ function generateMaze() {
 // Only pass frameKey/old user position if interpolation is desired
 function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCount = 0) {
 
+    // Clear the canvas so we only have to draw the walls
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     if(recurseCount == 0) {
         var offX, offY;
         if (oldUserLocation.x == userLocation.x) offX = 0;
@@ -303,14 +305,12 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
         interpOffset.mag -= INTERPOLATION_INCREMENT;
         if (interpOffset.mag < 0) {
             interpOffset.mag = 0;
-            reactToUserInput();
-            return;
         }
     }
 
-    var rowStart = userLocation.y - frameRadiusY;
+    var rowStart = userLocation.y - frameRadiusY - 1;
     if (rowStart < 0) rowStart = 0;
-    var colStart = userLocation.x - frameRadiusX;
+    var colStart = userLocation.x - frameRadiusX - 1;
     if (colStart < 0) colStart = 0;
 
     var rowEnd = userLocation.y + frameRadiusY;
@@ -318,24 +318,40 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
     var colEnd = userLocation.x + frameRadiusX;
     if (colEnd >= cols) colEnd = cols - 1;
 
+    var drawLast;
     for(var row=rowStart; row<=rowEnd; row++) {
         for(var col=colStart; col<=colEnd; col++) {
+
+            var cell = maze[row][col];
+            var isUser = false;
+            if (userLocation.x == col && userLocation.y == row) {
+               isUser = true;
+            }
+            if (cell.isEmpty() && !isUser) {
+                continue;
+            }
 
             var x = (col - userLocation.x) + frameRadiusX;
             var y = (row - userLocation.y) + frameRadiusY;
 
-            if(userLocation.x == col && userLocation.y == row)
-                var drawLast = {x: x, y: y, cell: maze[row][col]};
-            else
-                maze[row][col].drawAt(x, y);
+            if (isUser) {
+                drawLast = {x: x, y: y, cell: cell};
+            }
+
+            cell.drawAt(x, y);
         }
     }
     drawLast.cell.drawAt(drawLast.x, drawLast.y, USER_COLOR, true)
 
     if (interpolate) {
-        setTimeout(function() {
-            drawMaze(true, oldUserLocation, recurseCount + 1);
-        }, TIME_PER_DRAW_CYCLE_MS);
+        if (interpOffset.mag == 0) {
+            reactToUserInput();
+        } else {
+            setTimeout(function () {
+                drawMaze(true, oldUserLocation, recurseCount + 1);
+            }, 0);
+        }
+        return;
     }
 }
 
