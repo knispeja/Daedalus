@@ -192,7 +192,7 @@ var QUESTIONS = [
         ],
         "Paris kills Achilles with an arrow to the heel, as predicted by Hector in his dying words."
     ),
-    makeMultipleChoiceQuestion( //#25
+    makeMultipleChoiceQuestion(
         "What enrages Achilles and drives him to return to battle and kill Hector in the Trojan War?",
         [
             "The death of Patroclus",
@@ -202,5 +202,121 @@ var QUESTIONS = [
             "The theft of his armor"
         ],
         "Patroclus is Achilles' closest companion, so his death is the major motivation."
+    ),
+    makeMultipleChoiceQuestion(
+        "How is Ixion punished for eternity?",
+        [
+            "He is bound to a spinning wheel",
+            "He is forced to forever push a boulder up a hill",
+            "His liver is repeatedly eaten"
+        ],
+        "Ixion is punished in this way by Zeus for coveting Hera."
+    ),
+    makeMultipleChoiceQuestion(
+        "Who pushes a boulder uphill in a futile and eternal struggle?",
+        [
+            "Sisyphus",
+            "Ixion",
+            "Polynices",
+            "Theseus",
+            "Prometheus"
+        ]
+    ),
+    makeTrueFalseQuestion(
+        "The Greek name of Pluto is Hades.",
+        TRUE
+    ),
+    makeMultipleChoiceQuestion(
+        "Who is the goddess of the hearth and home?",
+        [
+            "Hestia",
+            "Artemis",
+            "Hera",
+            "Hebe",
+            "Athena"
+        ]
+    ),
+    makeMultipleChoiceQuestion(
+        "Who is the original cupbearer of the gods?",
+        [
+            "Hebe",
+            "Hestia",
+            "Hera",
+            "Hermes",
+            "Hades"
+        ],
+        "Hebe is the cupbearer of the gods until she is married to Heracles and supplanted by Ganymede."
+    ),
+    makeTrueFalseQuestion(
+        "Aeschylus is the author of <i>The Aeneid</i>.",
+        FALSE,
+        "<i>The Aeneid</i> was written by Virgil."
+    ),
+    makeTrueFalseQuestion(
+        "Sophocles is the author of the trilogy about Oedipus.",
+        TRUE
+    ),
+    makeMultipleChoiceQuestion(
+        "Who is Aeneas' divine mother?",
+        [
+            "Aphrodite",
+            "Hera",
+            "Leto",
+            "Demeter",
+            "Hebe"
+        ],
+        "Aeneas is the son of Aphrodite and Anchises."
+    ),
+    makeMultipleChoiceQuestion(
+        "Who is abandoned on Naxos by Theseus?",
+        [
+            "Ariadne",
+            "Phaedra",
+            "Medea",
+            "Pasiphae"
+        ]
+    ),
+    makeTrueFalseQuestion(
+        "Heracles kills the Minotaur.",
+        FALSE,
+        "Theseus kills the Minotaur."
+    ),
+    makeMultipleChoiceQuestion(
+        "Who fell in love with Hippolytus?",
+        [
+            "Phaedra, his step-mother.",
+            "Theseus, his father.",
+            "Hippolyta, his mother."
+        ]
+    ),
+    makeMultipleChoiceQuestion(
+        "Who is not a child of Zeus?",
+        [
+            "Hestia",
+            "Artemis",
+            "Hebe",
+            "Hermes",
+            "Perseus"
+        ],
+        "Hestia is the daughter of Cronus and Rhea, just like Zeus."
+    ),
+    makeTrueFalseQuestion(
+        "Zeus is Hera's brother.",
+        TRUE
+    ),
+    makeMultipleChoiceQuestion(
+        "Who throws the Apple of Discord into the divine wedding party?",
+        [
+            "Eris",
+            "Paris",
+            "Hera",
+            "Aphrodite",
+            "Helen"
+        ],
+        "Eris wasn't invited to the wedding, so she decided to cause trouble."
+    ),
+    makeTrueFalseQuestion( // #40
+        "Hermes stole Apollo's livestock as a baby.",
+        TRUE
     )
 ];
