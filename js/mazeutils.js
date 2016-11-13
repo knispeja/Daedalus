@@ -15,6 +15,10 @@ function randomIndexOf(arr) {
     return Math.floor(Math.random() * arr.length);
 }
 
+function randRange(lower, upper) {
+    return (Math.random() * (upper - lower) + lower);
+}
+
 // Returns a randomly shuffled version of the given array
 function shuffleArray(arr) {
     var shuffled = [];

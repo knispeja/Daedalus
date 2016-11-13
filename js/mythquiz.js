@@ -128,11 +128,10 @@ function toggleNextBtnExplanationShown() {
 }
 
 function skipToGame() {
-    showCanvas();
+    beginMazeNav();
     document.getElementById("progress").style.display = HIDE;
     document.getElementById("container").style.display = HIDE;
     document.getElementById("navcontainer").style.display = HIDE;
-    drawMaze();
     return;
 }
 

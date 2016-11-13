@@ -15,7 +15,14 @@ const OBJECTIVE_CELL = "objective";
 
 const INTERPOLATION_INCREMENT = 1; // in px
 
-const TORCH_FLICKER_FRAMES = 5;
+const TORCH_INNER_RADIUS_LOWER = 0.40;
+const TORCH_INNER_RADIUS_UPPER = 0.45;
+const TORCH_RADIUS_LOWER = 0.55;
+const TORCH_RADIUS_UPPER = 0.80;
+const TORCH_FLICKER_FRAMES_LOWER = 9;
+const TORCH_FLICKER_FRAMES_UPPER = 19;
+const INNER_TORCH_MULTIPLIER = 1/10.0;
+const OUTER_TORCH_MULTIPLIER = 1/2.2;
 
 var canvas;
 var ctx;
@@ -38,7 +45,9 @@ var frameRadiusY;
 var trueFrameRadiusX;
 var trueFrameRadiusY;
 
+var torchFlickerFrames = TORCH_FLICKER_FRAMES_LOWER;
 var torchFlickerCounter = 0;
+var innerTorchRadius = 0;
 var torchRadius = 0;
 
 var stepsTaken = 0;
@@ -331,18 +340,32 @@ function drawLightingEffects() {
     gradient = ctx.createRadialGradient(
         gradX,
         gradY,
-        canvas.height/12.0,
+        canvas.height*INNER_TORCH_MULTIPLIER,
         gradX,
         gradY,
-        canvas.height/2.2
+        canvas.height*OUTER_TORCH_MULTIPLIER
     );
     gradient.addColorStop(0, "rgba(248, 195, 119, 0.25)");
-    gradient.addColorStop(0.5, "rgba(148, 95, 19, 0.50)");
 
-    if (++torchFlickerCounter == TORCH_FLICKER_FRAMES) {
+    if (++torchFlickerCounter == torchFlickerFrames) {
+
+        torchFlickerFrames = Math.floor(randRange(
+            TORCH_FLICKER_FRAMES_LOWER,
+            TORCH_FLICKER_FRAMES_UPPER
+        ));
+
         torchFlickerCounter = 0;
-        torchRadius = (Math.random() * (0.6 - 0.8) + 0.8).toFixed(2)
+        innerTorchRadius = randRange(
+                TORCH_INNER_RADIUS_LOWER, 
+                TORCH_INNER_RADIUS_UPPER
+            ).toFixed(2);
+        torchRadius = randRange(
+                TORCH_RADIUS_LOWER,
+                TORCH_RADIUS_UPPER
+            ).toFixed(2);
     }
+    
+    gradient.addColorStop(0.5, "rgba(118, 75, 9, " + innerTorchRadius + ")");
     gradient.addColorStop(0.80, "rgba(18, 0, 0, " + torchRadius + ")");
     gradient.addColorStop(1, "rgba(0, 0, 0, 1.00)");
     ctx.fillStyle = gradient;
@@ -588,6 +611,11 @@ function showCanvas() {
     canvas.style.display="block";
 }
 
+function beginMazeNav() {
+    showCanvas();
+    reactToUserInput();
+}
+
 // Runs on load
 function mazeGenInit() {
     canvas = document.getElementById("canvas");
@@ -596,7 +624,6 @@ function mazeGenInit() {
     decideTileset();
     remakeMaze();
     addEventListeners();
-    reactToUserInput();
 }
 
 window.onload = mazeGenInit;
