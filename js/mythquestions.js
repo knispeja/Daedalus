@@ -58,8 +58,9 @@ var QUESTIONS = [
         "Medea is made to fall in love with Jason by Aphrodite, helps him to obtain the Golden Fleece."
     ),
     makeTrueFalseQuestion(
-        "Agamemnon is killed by Aegisthus and his wife, Clytemnestra.",
-        TRUE
+        "Agamemnon is killed by his daughter, Electra.",
+        FALSE,
+        "Agamemnon is either killed by his wife, Clytemnestra, or her lover, Aegisthus, in some versions."
     ),
     makeMultipleChoiceQuestion(
         "To which goddess did Paris give the apple of discord?",
@@ -71,7 +72,7 @@ var QUESTIONS = [
         "Aphrodite promised Paris the most beautiful woman in the world in return: Helen of Sparta."
     ),
     makeTrueFalseQuestion(
-        "Cronus devours his children because immortals are delicious and he is incredibly hungry.",
+        "Cronus devours his children because gods are delicious and he is incredibly hungry.",
         FALSE,
         "Cronus ate his children because a prophecy told him he would be succeeded by one of them."
     ),
