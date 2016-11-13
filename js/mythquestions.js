@@ -175,7 +175,7 @@ var QUESTIONS = [
         "What is the name of the ship upon which the Argonauts sailed?",
         [
             "<i>Argo</i>",
-            "<i>Argos</i>"
+            "<i>Argos</i>",
             "<i>Argus</i>"
         ],
         "Argus, the master craftsman, constructed <i>Argo</i>."
