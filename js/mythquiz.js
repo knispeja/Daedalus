@@ -56,15 +56,17 @@ function makeTrueFalseQuestion(question, answer, explanation="") {
     );
 }
 
-function makeMultipleChoiceQuestion(question, options, explanation="", answer=0) {
+function makeMultipleChoiceQuestion(question, options, explanation="", answer=0, scramble=true) {
 
     // Shuffle array and update answer index to shuffled answer location
-    var originalAnswer = options[answer];
-    options = shuffleArray(options);
-    for(var i=0; i<options.length; i++) {
-        if(options[i] === originalAnswer) {
-            answer = i;
-            break;
+    if(scramble) {
+        var originalAnswer = options[answer];
+        options = shuffleArray(options);
+        for (var i = 0; i < options.length; i++) {
+            if (options[i] === originalAnswer) {
+                answer = i;
+                break;
+            }
         }
     }
 

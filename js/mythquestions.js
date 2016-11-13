@@ -2,7 +2,6 @@
 var TRUE = 0;
 var FALSE = 1;
 
-// Currently contains 10 questions
 var QUESTIONS = [
     makeMultipleChoiceQuestion(
         "Who is Talos?",
@@ -29,7 +28,7 @@ var QUESTIONS = [
         "Zeus drew lots with Hades and Poseidon to decide who would get control of the heavens, and won."
     ),
     makeMultipleChoiceQuestion(
-        "Who was Dionysus' mother?",
+        "Who is Dionysus' mother?",
         [
             "Semele",
             "Hera",
@@ -42,7 +41,7 @@ var QUESTIONS = [
         "Which hero is not a son of Zeus?",
         [
             "Achilles",
-            "Hercules",
+            "Heracles",
             "Perseus"
         ],
         "Achilles is the son of Peleus and the nymph Thetis."
@@ -56,10 +55,10 @@ var QUESTIONS = [
             "Clytemnestra",
             "Helen"
         ],
-        "Medea was made to fall in love with Jason by Aphrodite, and she helped him to obtain the Golden Fleece."
+        "Medea is made to fall in love with Jason by Aphrodite, helps him to obtain the Golden Fleece."
     ),
     makeTrueFalseQuestion(
-        "Agamemnon was killed by Aegisthus and his wife, Clytemnestra.",
+        "Agamemnon is killed by Aegisthus and his wife, Clytemnestra.",
         TRUE
     ),
     makeMultipleChoiceQuestion(
@@ -72,7 +71,7 @@ var QUESTIONS = [
         "Aphrodite promised Paris the most beautiful woman in the world in return: Helen of Sparta."
     ),
     makeTrueFalseQuestion(
-        "Cronus devoured his children because immortals were delicious and he was incredibly hungry.",
+        "Cronus devours his children because immortals are delicious and he is incredibly hungry.",
         FALSE,
         "Cronus ate his children because a prophecy told him he would be succeeded by one of them."
     ),
@@ -80,5 +79,127 @@ var QUESTIONS = [
         "Cassandra had the gift of prophecy, but nobody believed her predictions.",
         TRUE,
         "Apollo cursed Cassandra so because she rejected his love."
+    ),
+    makeMultipleChoiceQuestion(
+        "What animal did Zeus turn into in order to kidnap Europa?",
+        [
+            "A bull",
+            "An eagle",
+            "A ram",
+            "A swan"
+        ],
+        "Zeus transformed into a white bull and carried Europa off to Crete."
+    ),
+    makeMultipleChoiceQuestion(
+        "Who is left alive after the great flood Zeus brought upon the world?",
+        [
+            "Deucalion and Pyrrha",
+            "Baucis and Philemon",
+            "Orpheus and Eurydice"
+        ]
+    ),
+    makeTrueFalseQuestion(
+        "Heracles released Prometheus from his chains.",
+        TRUE
+    ),
+    makeTrueFalseQuestion(
+        "Dionysus is the primary god of <i>The Bacchae</i>.",
+        TRUE
+    ),
+    makeTrueFalseQuestion(
+        "Oedipus is killed for his heinous acts in Thebes.",
+        FALSE,
+        "Oedipus lives a relatively long life and dies peacefully."
+    ),
+    makeMultipleChoiceQuestion(
+        "Who is the father of Oedipus?",
+        [
+            "Laius",
+            "Creon",
+            "Polybus"
+        ],
+        "Polybus is Oedipus' adopted father."
+    ),
+    makeMultipleChoiceQuestion(
+        "What is Antigone's relation to Oedipus?",
+        [
+            "Daughter",
+            "Sister",
+            "Mother",
+            "Grandmother"
+        ],
+        "Antigone is the daughter of Oedipus and Jocasta, making her both Jocasta's daughter <i>and</i> granddaughter."
+    ),
+    makeTrueFalseQuestion(
+        "Oedipus is aware of who his parents are when he defeats the Sphinx.",
+        FALSE,
+        "Oedipus believes his parents to be Polybus and Merope at that point."
+    ),
+    makeTrueFalseQuestion(
+        "Oedipus kills his father.",
+        TRUE,
+        "He is not aware it is his father, however."
+    ),
+    makeMultipleChoiceQuestion(
+        "Which is not true about Pandora?",
+        [
+            "She is a gift to humanity at Zeus' instruction.",
+            "She is the first woman.",
+            "She is created by Hephaestus.",
+            "She is given gifts by the Olympians."
+        ],
+        "Although Zeus does instruct Pandora be created, her creation is meant to be a punishment."
+    ),
+    makeMultipleChoiceQuestion(
+        "How many labors does Heracles perform?",
+        [
+            "3",
+            "7",
+            "12",
+            "16"
+        ],
+        "",
+        2,
+        false
+    ),
+    makeMultipleChoiceQuestion(
+        "After whom was the Hellespont named?",
+        [
+            "Helle",
+            "Helen",
+            "Helios"
+        ],
+        "Helle falls into what is now the Hellespont while fleeing her home on a golden ram."
+    ),
+    makeMultipleChoiceQuestion(
+        "What is the name of the ship upon which the Argonauts sailed?",
+        [
+            "<i>Argo</i>",
+            "<i>Argos</i>"
+            "<i>Argus</i>"
+        ],
+        "Argus, the master craftsman, constructed <i>Argo</i>."
+    ),
+    makeMultipleChoiceQuestion(
+        "Who kills Achilles with the help of Apollo during the Trojan War?",
+        [
+            "Paris",
+            "Hector",
+            "Agamemnon",
+            "Aeneas",
+            "Ajax"
+        ],
+        "Paris kills Achilles with an arrow to the heel, as predicted by Hector in his dying words."
+    ),
+    makeMultipleChoiceQuestion( //#25
+        "What enrages Achilles and drives him to return to battle and kill Hector in the Trojan War?",
+        [
+            "The death of Patroclus",
+            "The loss of Briseis",
+            "The death of his mother",
+            "The death of his father",
+            "The theft of his armor"
+        ],
+        "Patroclus is Achilles' closest companion, so his death is the major motivation."
     )
 ];
