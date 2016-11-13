@@ -132,6 +132,7 @@ function skipToGame() {
     document.getElementById("progress").style.display = HIDE;
     document.getElementById("container").style.display = HIDE;
     document.getElementById("navcontainer").style.display = HIDE;
+    drawMaze();
     return;
 }
 

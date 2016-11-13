@@ -1,6 +1,7 @@
 const MAZE_DIMENSION = 100; // in cells
 
-const CELL_LENGTH = 60; // in px
+const CELL_LENGTH = 60.0; // in px
+const HALF_CELL = CELL_LENGTH / 2.0;
 const USER_INPUT_WAIT_MS = 5;
 
 const USER_COLOR = "red";
@@ -12,7 +13,9 @@ const OBSTACLE_CELL = "obstacle";
 const EMPTY_CELL = "empty";
 const OBJECTIVE_CELL = "objective";
 
-const INTERPOLATION_INCREMENT = 2; // in px
+const INTERPOLATION_INCREMENT = 1; // in px
+
+const TORCH_FLICKER_FRAMES = 5;
 
 var canvas;
 var ctx;
@@ -24,6 +27,7 @@ var right;
 
 var maze = [];
 var userLocation = {x:0, y:0};
+var userDrawnLocation = {x:0, y:0};
 var originalLocation = {x:0, y:0};
 var objectiveCell;
 var cols;
@@ -31,11 +35,26 @@ var rows;
 
 var frameRadiusX;
 var frameRadiusY;
+var trueFrameRadiusX;
+var trueFrameRadiusY;
+
+var torchFlickerCounter = 0;
+var torchRadius = 0;
 
 var stepsTaken = 0;
 var optimalPath = 0;
 
 var interpOffset = {x:0, y:0, mag:0};
+
+var wallTileImage;
+var floorTileImage;
+function decideTileset() {
+    wallTileImage = new Image();
+    floorTileImage = new Image();
+
+    wallTileImage.src = "resources/wall/1.jpg";
+    floorTileImage.src = "resources/floor/1.jpg";
+}
 
 function Cell(type, x, y, color) {
     this.type = type;
@@ -64,15 +83,38 @@ function Cell(type, x, y, color) {
     this.draw = function(drawColor = this.color, xmod = this.x, ymod = this.y, noOffset = false) {
         ctx.fillStyle = drawColor;
 
+        var defMod = CELL_LENGTH;
         var xOff = noOffset ? 0 : (interpOffset.x * interpOffset.mag);
         var yOff = noOffset ? 0 : (interpOffset.y * interpOffset.mag);
 
-        ctx.fillRect(
-                xmod * CELL_LENGTH + xOff, 
-                ymod * CELL_LENGTH + yOff, 
+        var rectX = xmod * CELL_LENGTH + xOff - defMod;
+        var rectY = ymod * CELL_LENGTH + yOff - defMod;
+
+        if (drawColor == USER_COLOR) {
+            ctx.fillRect(
+                rectX, 
+                rectY, 
                 CELL_LENGTH, 
                 CELL_LENGTH
             );
+            userDrawnLocation.x = rectX;
+            userDrawnLocation.y = rectY;
+        } else {
+            var drawImg;
+            if (this.isObstacle()) {
+                drawImg = wallTileImage;
+            } else if (this.isEmpty()) {
+                drawImg = floorTileImage;
+            }
+
+            ctx.drawImage(
+                drawImg, 
+                rectX,
+                rectY, 
+                CELL_LENGTH, 
+                CELL_LENGTH
+            );
+        }
     }
 
     this.drawAt = function(x, y, drawColor = this.color, noOffset = false) {
@@ -94,8 +136,9 @@ function updateCanvasSize(redraw = true) {
 
     var cellsX = Math.ceil(canvas.width / CELL_LENGTH);
     var cellsY = Math.ceil(canvas.height / CELL_LENGTH);
-    frameRadiusX = Math.ceil(cellsX / 2);
-    frameRadiusY = Math.ceil(cellsY / 2);
+    frameRadiusX = Math.ceil(cellsX / 2.0);
+    frameRadiusY = Math.ceil(cellsY / 2.0);
+    trueFrameRadiusX = trueFrameRadiusY = Math.min(frameRadiusX, frameRadiusY);
 
     if(redraw) drawMaze();
 }
@@ -282,6 +325,30 @@ function generateMaze() {
     return newMaze;
 }
 
+function drawLightingEffects() {
+    gradX = userDrawnLocation.x + HALF_CELL;
+    gradY = userDrawnLocation.y + HALF_CELL;
+    gradient = ctx.createRadialGradient(
+        gradX,
+        gradY,
+        canvas.height/12.0,
+        gradX,
+        gradY,
+        canvas.height/2.2
+    );
+    gradient.addColorStop(0, "rgba(248, 195, 119, 0.25)");
+    gradient.addColorStop(0.5, "rgba(148, 95, 19, 0.50)");
+
+    if (++torchFlickerCounter == TORCH_FLICKER_FRAMES) {
+        torchFlickerCounter = 0;
+        torchRadius = (Math.random() * (0.6 - 0.8) + 0.8).toFixed(2)
+    }
+    gradient.addColorStop(0.80, "rgba(18, 0, 0, " + torchRadius + ")");
+    gradient.addColorStop(1, "rgba(0, 0, 0, 1.00)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
 // Only pass frameKey/old user position if interpolation is desired
 function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCount = 0) {
 
@@ -308,14 +375,14 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
         }
     }
 
-    var rowStart = userLocation.y - frameRadiusY - 1;
+    var rowStart = userLocation.y - trueFrameRadiusY - 1;
     if (rowStart < 0) rowStart = 0;
-    var colStart = userLocation.x - frameRadiusX - 1;
+    var colStart = userLocation.x - trueFrameRadiusX - 1;
     if (colStart < 0) colStart = 0;
 
-    var rowEnd = userLocation.y + frameRadiusY;
+    var rowEnd = userLocation.y + trueFrameRadiusY;
     if (rowEnd >= rows) rowEnd = rows - 1;
-    var colEnd = userLocation.x + frameRadiusX;
+    var colEnd = userLocation.x + trueFrameRadiusX;
     if (colEnd >= cols) colEnd = cols - 1;
 
     var drawLast;
@@ -327,9 +394,9 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
             if (userLocation.x == col && userLocation.y == row) {
                isUser = true;
             }
-            if (cell.isEmpty() && !isUser) {
-                continue;
-            }
+            // if (cell.isEmpty() && !isUser) {
+            //     continue;
+            // }
 
             var x = (col - userLocation.x) + frameRadiusX;
             var y = (row - userLocation.y) + frameRadiusY;
@@ -343,6 +410,9 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
     }
     drawLast.cell.drawAt(drawLast.x, drawLast.y, USER_COLOR, true)
 
+    drawLightingEffects();
+
+    // Either continue interpolation, recall user input function, or stop entirely
     if (interpolate) {
         if (interpOffset.mag == 0) {
             reactToUserInput();
@@ -404,16 +474,14 @@ function reactToUserInput() {
         }
     }
 
-    // Call this function again in USER_INPUT_WAIT_MS
-    setTimeout(reactToUserInput, USER_INPUT_WAIT_MS);
+    drawMaze();
+    setTimeout(reactToUserInput, 0);
 }
 
-function resetMaze(redraw = true) {
+function resetMaze() {
     up = down = left = right = false;
     stepsTaken = 0;
     userLocation = originalLocation;
-
-    if(redraw) drawMaze();
 }
 
 // If the inputs are appropriate, purges the current maze and generates a new one in its place.
@@ -421,7 +489,7 @@ function resetMaze(redraw = true) {
 function remakeMaze() {
 
     // Reset any variables from the previous maze
-    resetMaze(false);
+    resetMaze();
 
     // Get columns and rows from the input boxes
     cols = MAZE_DIMENSION;
@@ -435,8 +503,6 @@ function remakeMaze() {
     updateCanvasSize(false);
 
     maze = generateMaze();
-
-    drawMaze();
 
     // Solve the maze in order to get the optimal number of steps
     // Function automatically changes optimalPath to the optimal number of steps
@@ -527,6 +593,7 @@ function mazeGenInit() {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
 
+    decideTileset();
     remakeMaze();
     addEventListeners();
     reactToUserInput();
