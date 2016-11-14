@@ -1,8 +1,15 @@
-const MAZE_DIMENSION = 20; // in cells
 const MESSAGE_DURATION = 6500; // in ms
+
+const MAZE_DIMENSION_MAX = 150; // in cells
+const MAZE_DIMENSION_MIN_PERCENT = 0.24;
+
+const KRUSKAL_MIN_THRESHOLD = 0.4;
 
 const CELL_LENGTH = 75.0; // in px
 const HALF_CELL = CELL_LENGTH / 2.0;
+
+const KRUSKAL = 1;
+const RECURSIVE_BACKTRACKING = 2;
 
 const USER_COLOR = "red";
 const OBSTACLE_COLOR = "black";
@@ -88,6 +95,8 @@ var openDoorImage;
 var closedDoorImage;
 var minotaurImage;
 var minotaurEyesImage;
+
+var mazeDimension;
 
 var seenMinotaur = false;
 var minotaurIsKilled = false;
@@ -433,7 +442,7 @@ function generateMazeRecursiveBacktracking(m) {
 }
 
 // Returns a new maze (2D array, row-indexed first) using the user-selected method
-function generateMaze() {
+function generateMaze(method) {
     var newMaze = [];
 
     // Generate empty maze
@@ -446,11 +455,17 @@ function generateMaze() {
     }
 
     // Generate maze innards -- these methods will not place starting/ending pts
-    generateMazeKruskal(newMaze);
-    //generateMazeRecursiveBacktracking(newMaze);
+    switch(method) {
+        case KRUSKAL:
+            generateMazeKruskal(newMaze);
+            break;
+        case RECURSIVE_BACKTRACKING:
+            generateMazeRecursiveBacktracking(newMaze);
+            break;
+    }
 
     // Place objective and starting point along top wall
-    for(var col=cols-Math.floor(MAZE_DIMENSION/2); col>=0; col--) {
+    for(var col=cols-Math.floor(mazeDimension/2); col>=0; col--) {
         if(newMaze[1][col].isEmpty()) {
             userLocation = {x: col, y: 1};
             newMaze[1][col].lastEnteredFrom = TOP;
@@ -538,8 +553,10 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
     if(userDraw) userDraw.cell.drawAt(userDraw.x, userDraw.y, USER_COLOR, true);
     if(minotaurDraw) {
         minotaurDraw.cell.drawAt(minotaurDraw.x, minotaurDraw.y);
-        setMessage("I can hear something breathing...");
-        seenMinotaur = true;
+        if(!seenMinotaur) {
+            setMessage("I can hear something breathing...");
+            seenMinotaur = true;
+        }
     }
 
     drawLightingEffects();
@@ -771,14 +788,14 @@ function resetMaze() {
 
 // If the inputs are appropriate, purges the current maze and generates a new one in its place.
 // Resets any variables like user position, held keys, paths, etc. that the old maze relied on.
-function remakeMaze() {
+function remakeMaze(method) {
 
     // Reset any variables from the previous maze
     resetMaze();
 
     // Get columns and rows from the input boxes
-    cols = MAZE_DIMENSION;
-    rows = MAZE_DIMENSION;
+    cols = mazeDimension;
+    rows = mazeDimension;
 
     // Limit numbers to odd values
     if(cols % 2 == 0) cols++;
@@ -787,7 +804,7 @@ function remakeMaze() {
     // Generate maze and update the canvas...
     updateCanvasSize(false);
 
-    maze = generateMaze();
+    maze = generateMaze(method);
     stepsToMinotaur = solveMaze(false);
 }
 
@@ -862,17 +879,30 @@ function showCanvas() {
     canvas.style.display="block";
 }
 
-function computeBaseYarnAmt() {
-    return MAZE_DIMENSION;
-}
+function beginMazeNav(difficulty) {
 
-function beginMazeNav(extraYarn) {
-    document.body.style.backgroundColor = "black";
-    yarn = extraYarn + computeBaseYarnAmt();
+    // Decide maze dimensions
+    var mazeDimPercent = (difficulty < MAZE_DIMENSION_MIN_PERCENT) ? MAZE_DIMENSION_MIN_PERCENT : difficulty;
+    mazeDimension = Math.ceil(mazeDimPercent * MAZE_DIMENSION_MAX);
+    
+    // Generate maze
+    if (difficulty <= KRUSKAL_MIN_THRESHOLD)
+        remakeMaze(KRUSKAL);
+    else
+        remakeMaze(RECURSIVE_BACKTRACKING);
+
+    addEventListeners();
+
+    // Decide how much yarn to give
+    var yarnMultiplier = (difficulty < 0.5) ? 0.85 : 0.60;
+    yarn = Math.floor(yarnMultiplier * stepsToMinotaur);
     originalYarn = yarn;
+
+    document.body.style.backgroundColor = "black";
     showCanvas();
-    setMessage("The Minotaur is but " + stepsToMinotaur + " steps away.");
     reactToUserInput();
+
+    setMessage("The Minotaur is but " + stepsToMinotaur + " steps away.");
 }
 
 // Runs on load
@@ -881,8 +911,6 @@ function mazeGenInit() {
     ctx = canvas.getContext("2d");
 
     decideTileset();
-    remakeMaze();
-    addEventListeners();
 }
 
 window.onload = mazeGenInit;
