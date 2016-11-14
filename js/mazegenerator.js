@@ -1,8 +1,7 @@
-const MAZE_DIMENSION = 100; // in cells
+const MAZE_DIMENSION = 40; // in cells
 
-const CELL_LENGTH = 60.0; // in px
+const CELL_LENGTH = 75.0; // in px
 const HALF_CELL = CELL_LENGTH / 2.0;
-const USER_INPUT_WAIT_MS = 5;
 
 const USER_COLOR = "red";
 const OBSTACLE_COLOR = "black";
@@ -131,7 +130,6 @@ function Cell(type, x, y, color) {
     }
 }
 
-function makeObstacleCell(x, y) {return new Cell(OBSTACLE_CELL, x, y, OBSTACLE_COLOR);}
 function makeObjectiveCell(x, y) {return new Cell(OBJECTIVE_CELL, x, y, OBJECTIVE_COLOR);}
 function makeEmptyCell(x, y) {return new Cell(EMPTY_CELL, x, y, EMPTY_COLOR);}
 
@@ -334,44 +332,6 @@ function generateMaze() {
     return newMaze;
 }
 
-function drawLightingEffects() {
-    gradX = userDrawnLocation.x + HALF_CELL;
-    gradY = userDrawnLocation.y + HALF_CELL;
-    gradient = ctx.createRadialGradient(
-        gradX,
-        gradY,
-        canvas.height*INNER_TORCH_MULTIPLIER,
-        gradX,
-        gradY,
-        canvas.height*OUTER_TORCH_MULTIPLIER
-    );
-    gradient.addColorStop(0, "rgba(248, 195, 119, 0.25)");
-
-    if (++torchFlickerCounter == torchFlickerFrames) {
-
-        torchFlickerFrames = Math.floor(randRange(
-            TORCH_FLICKER_FRAMES_LOWER,
-            TORCH_FLICKER_FRAMES_UPPER
-        ));
-
-        torchFlickerCounter = 0;
-        innerTorchRadius = randRange(
-                TORCH_INNER_RADIUS_LOWER, 
-                TORCH_INNER_RADIUS_UPPER
-            ).toFixed(2);
-        torchRadius = randRange(
-                TORCH_RADIUS_LOWER,
-                TORCH_RADIUS_UPPER
-            ).toFixed(2);
-    }
-    
-    gradient.addColorStop(0.5, "rgba(118, 75, 9, " + innerTorchRadius + ")");
-    gradient.addColorStop(0.80, "rgba(18, 0, 0, " + torchRadius + ")");
-    gradient.addColorStop(1, "rgba(0, 0, 0, 1.00)");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
-
 // Only pass frameKey/old user position if interpolation is desired
 function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCount = 0) {
 
@@ -446,6 +406,44 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
         }
         return;
     }
+}
+
+function drawLightingEffects() {
+    gradX = userDrawnLocation.x + HALF_CELL;
+    gradY = userDrawnLocation.y + HALF_CELL;
+    gradient = ctx.createRadialGradient(
+        gradX,
+        gradY,
+        canvas.height*INNER_TORCH_MULTIPLIER,
+        gradX,
+        gradY,
+        canvas.height*OUTER_TORCH_MULTIPLIER
+    );
+    gradient.addColorStop(0, "rgba(248, 195, 119, 0.25)");
+
+    if (++torchFlickerCounter == torchFlickerFrames) {
+
+        torchFlickerFrames = Math.floor(randRange(
+            TORCH_FLICKER_FRAMES_LOWER,
+            TORCH_FLICKER_FRAMES_UPPER
+        ));
+
+        torchFlickerCounter = 0;
+        innerTorchRadius = randRange(
+            TORCH_INNER_RADIUS_LOWER,
+            TORCH_INNER_RADIUS_UPPER
+        ).toFixed(2);
+        torchRadius = randRange(
+            TORCH_RADIUS_LOWER,
+            TORCH_RADIUS_UPPER
+        ).toFixed(2);
+    }
+
+    gradient.addColorStop(0.5, "rgba(118, 75, 9, " + innerTorchRadius + ")");
+    gradient.addColorStop(0.80, "rgba(18, 0, 0, " + torchRadius + ")");
+    gradient.addColorStop(1, "rgba(0, 0, 0, 1.00)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 // Runs every USER_INPUT_WAIT_MS, so needs to be fast
@@ -535,17 +533,6 @@ function remakeMaze() {
 function onKeyDown(event) {
 
     var keyCode = event.keyCode;
-
-    // Always respond to enter being pressed by regenerating the maze
-    if(keyCode == 13) {
-        remakeMaze();
-        return;
-    }
-
-    // Don't capture input if the user is already in a text box
-    if(document.activeElement instanceof HTMLInputElement && document.activeElement.type == "text") {
-        return;
-    }
 
     // Respond to directional inputs
     switch(keyCode) {     
