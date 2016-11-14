@@ -83,6 +83,10 @@ var maxQuality = true;
 var wallTileImage;
 var floorTileImage;
 var yarnImage;
+var openDoorImage;
+var closedDoorImage;
+
+var minotaurIsKilled = false;
 
 function oppositeSide(side) {
     switch(side) {
@@ -108,6 +112,11 @@ function decideTileset() {
             yarnImages[j].src = yarn.path + (j + 1) + ".png";
         }
     }
+
+    openDoorImage = new Image();
+    openDoorImage.src = 'resources/door_open.png';
+    closedDoorImage = new Image();
+    closedDoorImage.src = 'resources/door_closed.png';
 
     wallTileImage = new Image();
     floorTileImage = new Image();
@@ -176,6 +185,17 @@ function Cell(type, x, y, color) {
                     drawImg = wallTileImage;
                 } else if (this.isEmpty()) {
                     drawImg = floorTileImage;
+                } else if (this.isObjective()) {
+
+                    ctx.drawImage(
+                        wallTileImage,
+                        rectX,
+                        rectY,
+                        CELL_LENGTH,
+                        CELL_LENGTH
+                    );
+
+                    drawImg = minotaurIsKilled ? openDoorImage : closedDoorImage;
                 }
             }
 
@@ -398,15 +418,13 @@ function generateMaze() {
     generateMazeKruskal(newMaze);
     //generateMazeRecursiveBacktracking(newMaze);
 
-    // Place starting point in the center
-    userDim = Math.ceil(MAZE_DIMENSION/2);
-    userLocation = {x: userDim, y: userDim};
-    
-    // Place objective along east wall
-    for(var row=rows-2; row>=0; row--) {
-        if(newMaze[row][cols-2].isEmpty()) {
+    // Place objective and starting point along top wall
+    for(var col=cols-2; col>=0; col--) {
+        if(newMaze[1][col].isEmpty()) {
+            userLocation = {x: col, y: 1};
+            newMaze[1][col].lastEnteredFrom = TOP;
             objectiveCell = makeObjectiveCell(cols-1, row);
-            newMaze[row][cols-1] = objectiveCell;
+            newMaze[0][col] = objectiveCell;
             break;
         }
     }
@@ -748,6 +766,7 @@ function computeBaseYarnAmt() {
 }
 
 function beginMazeNav(extraYarn) {
+    document.body.style.backgroundColor = "black";
     yarn = extraYarn + computeBaseYarnAmt();
     originalYarn = yarn;
     showCanvas();
