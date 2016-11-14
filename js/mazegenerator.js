@@ -5,7 +5,7 @@ const MAZE_DIMENSION_MIN_PERCENT = 0.24;
 
 const KRUSKAL_MIN_THRESHOLD = 0.4;
 
-const CELL_LENGTH = 75.0; // in px
+const CELL_LENGTH = 65.0; // in px
 const HALF_CELL = CELL_LENGTH / 2.0;
 
 const KRUSKAL = 1;
