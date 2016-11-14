@@ -1,4 +1,4 @@
-const MAZE_DIMENSION = 40; // in cells
+const MAZE_DIMENSION = 20; // in cells
 const MESSAGE_DURATION = 6500; // in ms
 
 const CELL_LENGTH = 75.0; // in px
@@ -86,6 +86,7 @@ var floorTileImage;
 var yarnImage;
 var openDoorImage;
 var closedDoorImage;
+var minotaurImage;
 
 var minotaurIsKilled = false;
 
@@ -119,11 +120,14 @@ function decideTileset() {
     closedDoorImage = new Image();
     closedDoorImage.src = 'resources/door_closed.png';
 
+    yarnImage = new Image();
+    yarnImage.src = "resources/yarn/yarn.png";
+
+    minotaurImage = new Image();
+    minotaurImage.src = "resources/minotaur/minotaur.png";
+
     wallTileImage = new Image();
     floorTileImage = new Image();
-    yarnImage = new Image();
-
-    yarnImage.src = "resources/yarn/yarn.png";
     
     var ext = ".jpg";
     var wallNum = randomIntFromZero(NUM_WALL_OPTIONS) + 1;
@@ -143,6 +147,8 @@ function Cell(type, x, y, color) {
 
     this.lastEnteredFrom = undefined;
     this.stringImage = undefined;
+
+    this.containsMinotaur = false;
 
     this.isObjective = function() {return this.type == OBJECTIVE_CELL;}
     this.isObstacle = function() {return this.type == OBSTACLE_CELL;}
@@ -181,23 +187,22 @@ function Cell(type, x, y, color) {
             userDrawnLocation.y = rectY;
         } else {
             var drawImg;
-            if (maxQuality) {
-                if (this.isObstacle()) {
-                    drawImg = wallTileImage;
-                } else if (this.isEmpty()) {
-                    drawImg = floorTileImage;
-                } else if (this.isObjective()) {
 
-                    ctx.drawImage(
-                        wallTileImage,
-                        rectX,
-                        rectY,
-                        CELL_LENGTH,
-                        CELL_LENGTH
-                    );
+            if (this.isObstacle()) {
+                drawImg = wallTileImage;
+            } else if (this.isEmpty()) {
+                drawImg = floorTileImage;
+            } else if (this.isObjective()) {
 
-                    drawImg = minotaurIsKilled ? openDoorImage : closedDoorImage;
-                }
+                ctx.drawImage(
+                    wallTileImage,
+                    rectX,
+                    rectY,
+                    CELL_LENGTH,
+                    CELL_LENGTH
+                );
+
+                drawImg = minotaurIsKilled ? openDoorImage : closedDoorImage;
             }
 
             if (drawImg) {
@@ -220,6 +225,16 @@ function Cell(type, x, y, color) {
             if (this.stringImage) {
                 ctx.drawImage(
                     this.stringImage,
+                    rectX,
+                    rectY,
+                    CELL_LENGTH,
+                    CELL_LENGTH
+                );
+            }
+
+            if (this.containsMinotaur) {
+                ctx.drawImage(
+                    minotaurImage,
                     rectX,
                     rectY,
                     CELL_LENGTH,
@@ -420,12 +435,20 @@ function generateMaze() {
     //generateMazeRecursiveBacktracking(newMaze);
 
     // Place objective and starting point along top wall
-    for(var col=cols-2; col>=0; col--) {
+    for(var col=cols-Math.floor(MAZE_DIMENSION/2); col>=0; col--) {
         if(newMaze[1][col].isEmpty()) {
             userLocation = {x: col, y: 1};
             newMaze[1][col].lastEnteredFrom = TOP;
             objectiveCell = makeObjectiveCell(cols-1, row);
             newMaze[0][col] = objectiveCell;
+            break;
+        }
+    }
+
+    // Place minotaur near the bottom somewhere
+    for(var col=randomIntFromZero(cols-1); col<cols; col++) {
+        if(newMaze[rows-4][col].isEmpty()) {
+            newMaze[rows-4][col].containsMinotaur = true;
             break;
         }
     }
@@ -469,7 +492,8 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
     var colEnd = userLocation.x + trueFrameRadiusX;
     if (colEnd >= cols) colEnd = cols - 1;
 
-    var drawLast;
+    var userDraw;
+    var minotaurDraw;
     for(var row=rowStart; row<=rowEnd; row++) {
         for(var col=colStart; col<=colEnd; col++) {
 
@@ -486,13 +510,17 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
             var y = (row - userLocation.y) + frameRadiusY;
 
             if (isUser) {
-                drawLast = {x: x, y: y, cell: cell};
+                userDraw = {x: x, y: y, cell: cell};
+            }
+            if (cell.containsMinotaur) {
+                minotaurDraw = {x: x, y: y, cell: cell};
             }
 
             cell.drawAt(x, y);
         }
     }
-    drawLast.cell.drawAt(drawLast.x, drawLast.y, USER_COLOR, true)
+    if(userDraw) userDraw.cell.drawAt(userDraw.x, userDraw.y, USER_COLOR, true);
+    if(minotaurDraw) minotaurDraw.cell.drawAt(minotaurDraw.x, minotaurDraw.y);
 
     drawLightingEffects();
     drawYarn();
@@ -565,7 +593,7 @@ function chooseYarnImage(yarnContainer) {
     return yarnContainer.images[randomIndexOf(yarnContainer.images)];
 }
 
-function setMessage(text) {
+function setMessage(text, noTimeout=false) {
     var mazeText = document.getElementById("mazeText");
     var message =
         "<i>\"" +
@@ -573,9 +601,11 @@ function setMessage(text) {
         "\"</i>";
     if (mazeText.innerHTML === message) return; // don't push message if it is equivalent
     mazeText.innerHTML = message;
-    setTimeout(function() {
-        document.getElementById("mazeText").innerHTML = "";
-    }, MESSAGE_DURATION);
+    if (!noTimeout) {
+        setTimeout(function () {
+            document.getElementById("mazeText").innerHTML = "";
+        }, MESSAGE_DURATION);
+    }
 }
 
 function isTraversable(cell) {
@@ -624,8 +654,14 @@ function reactToUserInput() {
         // Player moved to a valid space
         if(isTraversable(newCell) && !newCell.equals(oldCell)) {
 
-            userLocation = {x: newCell.x, y: newCell.y};
+
             needsRedraw = true;
+
+            if (newCell.containsMinotaur) {
+                minotaurIsKilled = true;
+                newCell.containsMinotaur = false;
+                setMessage("I've slain the Minotaur... Time to find my way out.");
+            }
 
             if (!minotaurIsKilled) {
                 // Pick up yarn or set lastEnteredFrom
@@ -672,10 +708,16 @@ function reactToUserInput() {
 
             // Player reached the objective
             if(newCell.isObjective()) {
-                var message = "Congratulations, you solved the maze!";
-                message += "\nSteps taken:  " + stepsTaken;
-                message += "\nOptimal path: " + optimalPath;
-                alert(message);
+                setMessage(
+                    "Well run, Thisbe. You took " +
+                    stepsTaken + " " +
+                    "steps in order to complete the labyrinth.",
+                    true
+                );
+                return;
+            } else {
+                // Update user location
+                userLocation = {x: newCell.x, y: newCell.y};
             }
         }
 
