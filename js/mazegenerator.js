@@ -1,7 +1,8 @@
-const MAZE_DIMENSION = 30; // in cells
+const MAZE_DIMENSION = 100; // in cells
 
-const CELL_LENGTH = 90.0; // in px
+const CELL_LENGTH = 60.0; // in px
 const HALF_CELL = CELL_LENGTH / 2.0;
+const USER_INPUT_WAIT_MS = 5;
 
 const USER_COLOR = "red";
 const OBSTACLE_COLOR = "black";
@@ -56,7 +57,6 @@ var interpOffset = {x:0, y:0, mag:0};
 
 var wallTileImage;
 var floorTileImage;
-var mazeBackgroundImage;
 function decideTileset() {
     wallTileImage = new Image();
     floorTileImage = new Image();
@@ -90,18 +90,19 @@ function Cell(type, x, y, color) {
     }
 
     this.draw = function(drawColor = this.color, xmod = this.x, ymod = this.y, noOffset = false) {
-
         ctx.fillStyle = drawColor;
 
+        var defMod = CELL_LENGTH;
         var xOff = noOffset ? 0 : (interpOffset.x * interpOffset.mag);
         var yOff = noOffset ? 0 : (interpOffset.y * interpOffset.mag);
-        var rectX = xmod * CELL_LENGTH + xOff;
-        var rectY = ymod * CELL_LENGTH + yOff;
+
+        var rectX = xmod * CELL_LENGTH + xOff - defMod;
+        var rectY = ymod * CELL_LENGTH + yOff - defMod;
 
         if (drawColor == USER_COLOR) {
             ctx.fillRect(
-                rectX,
-                rectY,
+                rectX, 
+                rectY, 
                 CELL_LENGTH, 
                 CELL_LENGTH
             );
@@ -112,8 +113,6 @@ function Cell(type, x, y, color) {
             if (this.isObstacle()) {
                 drawImg = wallTileImage;
             } else if (this.isEmpty()) {
-                drawImg = floorTileImage;
-            } else {
                 drawImg = floorTileImage;
             }
 
@@ -132,6 +131,7 @@ function Cell(type, x, y, color) {
     }
 }
 
+function makeObstacleCell(x, y) {return new Cell(OBSTACLE_CELL, x, y, OBSTACLE_COLOR);}
 function makeObjectiveCell(x, y) {return new Cell(OBJECTIVE_CELL, x, y, OBJECTIVE_COLOR);}
 function makeEmptyCell(x, y) {return new Cell(EMPTY_CELL, x, y, EMPTY_COLOR);}
 
@@ -334,6 +334,44 @@ function generateMaze() {
     return newMaze;
 }
 
+function drawLightingEffects() {
+    gradX = userDrawnLocation.x + HALF_CELL;
+    gradY = userDrawnLocation.y + HALF_CELL;
+    gradient = ctx.createRadialGradient(
+        gradX,
+        gradY,
+        canvas.height*INNER_TORCH_MULTIPLIER,
+        gradX,
+        gradY,
+        canvas.height*OUTER_TORCH_MULTIPLIER
+    );
+    gradient.addColorStop(0, "rgba(248, 195, 119, 0.25)");
+
+    if (++torchFlickerCounter == torchFlickerFrames) {
+
+        torchFlickerFrames = Math.floor(randRange(
+            TORCH_FLICKER_FRAMES_LOWER,
+            TORCH_FLICKER_FRAMES_UPPER
+        ));
+
+        torchFlickerCounter = 0;
+        innerTorchRadius = randRange(
+                TORCH_INNER_RADIUS_LOWER, 
+                TORCH_INNER_RADIUS_UPPER
+            ).toFixed(2);
+        torchRadius = randRange(
+                TORCH_RADIUS_LOWER,
+                TORCH_RADIUS_UPPER
+            ).toFixed(2);
+    }
+    
+    gradient.addColorStop(0.5, "rgba(118, 75, 9, " + innerTorchRadius + ")");
+    gradient.addColorStop(0.80, "rgba(18, 0, 0, " + torchRadius + ")");
+    gradient.addColorStop(1, "rgba(0, 0, 0, 1.00)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
 // Only pass frameKey/old user position if interpolation is desired
 function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCount = 0) {
 
@@ -360,35 +398,40 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
         }
     }
 
-    var rowStart = userLocation.y - frameRadiusY + 1;
-    var colStart = userLocation.x - frameRadiusX + 1;
+    var rowStart = userLocation.y - trueFrameRadiusY - 1;
+    if (rowStart < 0) rowStart = 0;
+    var colStart = userLocation.x - trueFrameRadiusX - 1;
+    if (colStart < 0) colStart = 0;
 
-    var imageCropStartX = colStart * CELL_LENGTH - interpOffset.mag * interpOffset.x;
-    var imageCropStartY = rowStart * CELL_LENGTH - interpOffset.mag * interpOffset.y;
+    var rowEnd = userLocation.y + trueFrameRadiusY;
+    if (rowEnd >= rows) rowEnd = rows - 1;
+    var colEnd = userLocation.x + trueFrameRadiusX;
+    if (colEnd >= cols) colEnd = cols - 1;
 
-    var imageDrawStartX = 0;
-    if (imageCropStartX < 0) {
-        imageDrawStartX = -1 * imageCropStartX;
-        imageCropStartX = 0;
+    var drawLast;
+    for(var row=rowStart; row<=rowEnd; row++) {
+        for(var col=colStart; col<=colEnd; col++) {
+
+            var cell = maze[row][col];
+            var isUser = false;
+            if (userLocation.x == col && userLocation.y == row) {
+               isUser = true;
+            }
+            // if (cell.isEmpty() && !isUser) {
+            //     continue;
+            // }
+
+            var x = (col - userLocation.x) + frameRadiusX;
+            var y = (row - userLocation.y) + frameRadiusY;
+
+            if (isUser) {
+                drawLast = {x: x, y: y, cell: cell};
+            }
+
+            cell.drawAt(x, y);
+        }
     }
-    var imageDrawStartY = 0;
-    if (imageCropStartY < 0) {
-        imageDrawStartY = -1 * imageCropStartY;
-        imageCropStartY = 0;
-    }
-    ctx.drawImage(
-        mazeBackgroundImage,
-        imageCropStartX,
-        imageCropStartY,
-        canvas.width - imageDrawStartX,
-        canvas.height - imageDrawStartY,
-        imageDrawStartX,
-        imageDrawStartY,
-        canvas.width - imageDrawStartX,
-        canvas.height - imageDrawStartY
-    )
-
-    getCellAtUserLocation().drawAt(frameRadiusX - 1, frameRadiusY - 1, USER_COLOR, true)
+    drawLast.cell.drawAt(drawLast.x, drawLast.y, USER_COLOR, true)
 
     drawLightingEffects();
 
@@ -403,69 +446,6 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
         }
         return;
     }
-}
-
-function drawLightingEffects() {
-    var gradX = userDrawnLocation.x + HALF_CELL;
-    var gradY = userDrawnLocation.y + HALF_CELL;
-    var gradient = ctx.createRadialGradient(
-        gradX,
-        gradY,
-        canvas.height*INNER_TORCH_MULTIPLIER,
-        gradX,
-        gradY,
-        canvas.height*OUTER_TORCH_MULTIPLIER
-    );
-    gradient.addColorStop(0, "rgba(248, 195, 119, 0.25)");
-
-    if (++torchFlickerCounter == torchFlickerFrames) {
-
-        torchFlickerFrames = Math.floor(randRange(
-            TORCH_FLICKER_FRAMES_LOWER,
-            TORCH_FLICKER_FRAMES_UPPER
-        ));
-
-        torchFlickerCounter = 0;
-        innerTorchRadius = randRange(
-            TORCH_INNER_RADIUS_LOWER,
-            TORCH_INNER_RADIUS_UPPER
-        ).toFixed(2);
-        torchRadius = randRange(
-            TORCH_RADIUS_LOWER,
-            TORCH_RADIUS_UPPER
-        ).toFixed(2);
-    }
-
-    gradient.addColorStop(0.5, "rgba(118, 75, 9, " + innerTorchRadius + ")");
-    gradient.addColorStop(0.80, "rgba(18, 0, 0, " + torchRadius + ")");
-    gradient.addColorStop(1, "rgba(0, 0, 0, 1.00)");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
-
-function makeImageFromMaze() {
-
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Resize canvas for the image size
-    canvas.width = CELL_LENGTH * cols;
-    canvas.height = CELL_LENGTH * rows;
-
-    for(var row=0; row<rows; row++) {
-        for(var col=0; col<cols; col++) {
-            maze[row][col].draw();
-        }
-    }
-
-    // Create the image from the canvas
-    var img = new Image();
-    img.src = canvas.toDataURL();
-
-    // Reset canvas size
-    updateCanvasSize(false);
-
-    return img;
 }
 
 // Runs every USER_INPUT_WAIT_MS, so needs to be fast
@@ -556,6 +536,17 @@ function onKeyDown(event) {
 
     var keyCode = event.keyCode;
 
+    // Always respond to enter being pressed by regenerating the maze
+    if(keyCode == 13) {
+        remakeMaze();
+        return;
+    }
+
+    // Don't capture input if the user is already in a text box
+    if(document.activeElement instanceof HTMLInputElement && document.activeElement.type == "text") {
+        return;
+    }
+
     // Respond to directional inputs
     switch(keyCode) {     
         case 38:  //up arrow
@@ -621,7 +612,6 @@ function showCanvas() {
 }
 
 function beginMazeNav() {
-    mazeBackgroundImage = makeImageFromMaze();
     showCanvas();
     reactToUserInput();
 }
