@@ -315,8 +315,88 @@ var QUESTIONS = [
         ],
         "Eris wasn't invited to the wedding, so she decided to cause trouble."
     ),
-    makeTrueFalseQuestion( // #40
+    makeTrueFalseQuestion(
         "Hermes stole Apollo's livestock as a baby.",
         TRUE
+    ),
+    makeMultipleChoiceQuestion(
+        "Who gave Theseus the thread to help him find his way in the labyrinth?",
+        [
+            "Ariadne",
+            "Semele",
+            "Helen",
+            "Phaedra"
+        ]
+    ),
+    makeMultipleChoiceQuestion(
+        "From what event did Pegasus originate?",
+        [
+            "The death of Medusa",
+            "The injury of Zeus",
+            "The death of Hercules",
+            "The mating of a horse and an eagle"
+        ]
+    ),
+    makeMultipleChoiceQuestion(
+        "Who killed Medusa?",
+        [
+            "Perseus",
+            "Theseus",
+            "Hercules"
+        ]
+    ),
+    makeTrueFalseQuestion(
+        "The gray sisters shared but one ear among them all.",
+        FALSE,
+        "It was an eye and a tooth that they shared."
+    ),
+    makeMultipleChoiceQuestion(
+        "Choose the odd one out.",
+        [
+            "Faerun",
+            "Erinyes",
+            "Eumenides",
+            "Furies"
+        ],
+        "All are names for the Furies except for 'Faerun.'"
+    ),
+    makeMultipleChoiceQuestion(
+        "Who is not a child of Leda?",
+        [
+            "Diomedes",
+            "Castor",
+            "Pollux",
+            "Clytemnestra",
+            "Helen"
+        ]
+    ),
+    makeTrueFalseQuestion(
+        "Of Castor and Pollux, the former was naturally immortal.",
+        FALSE,
+        "It was Pollux who was born immortal."
+    ),
+    makeMultipleChoiceQuestion(
+        "Poseidon is the god of both the sea and...?",
+        [
+            "Earthquakes",
+            "Rain",
+            "Fish",
+            "Sand"
+        ]
+    ),
+    makeMultipleChoiceQuestion(
+        "God of healing and father of Asclepius.",
+        [
+            "Apollo",
+            "Dionysus",
+            "Ares",
+            "Zeus",
+            "Poseidon"
+        ]
+    ),
+    makeTrueFalseQuestion( // #50
+        "Asclepius was killed by Zeus.",
+        TRUE,
+        "This was a punishment for bringing people back from the dead."
     )
 ];
