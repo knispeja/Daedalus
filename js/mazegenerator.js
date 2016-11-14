@@ -23,8 +23,8 @@ const TORCH_FLICKER_FRAMES_UPPER = 19;
 const INNER_TORCH_MULTIPLIER = 1/10.0;
 const OUTER_TORCH_MULTIPLIER = 1/2.2;
 
-const NUM_WALL_OPTIONS = 1;
-const NUM_FLOOR_OPTIONS = 1;
+const NUM_WALL_OPTIONS = 3;
+const NUM_FLOOR_OPTIONS = 3;
 
 var canvas;
 var ctx;
@@ -57,14 +57,20 @@ var optimalPath = 0;
 
 var interpOffset = {x:0, y:0, mag:0};
 
+var originalYarn = 0;
 var yarn = 0;
 var maxQuality = true;
 
 var wallTileImage;
 var floorTileImage;
+var yarnImage;
+
 function decideTileset() {
     wallTileImage = new Image();
     floorTileImage = new Image();
+    yarnImage = new Image();
+
+    yarnImage.src = "resources/yarn.png";
     
     var ext = ".jpg";
     var wallNum = randomIntFromZero(NUM_WALL_OPTIONS) + 1;
@@ -415,6 +421,7 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
     drawLast.cell.drawAt(drawLast.x, drawLast.y, USER_COLOR, true)
 
     drawLightingEffects();
+    drawYarn();
 
     // Either continue interpolation, recall user input function, or stop entirely
     if (interpolate) {
@@ -470,6 +477,16 @@ function drawLightingEffects() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
+function drawYarn() {
+    var yarnX = (canvas.width - trueFrameRadiusX * CELL_LENGTH) / 8.0;
+    var yarnY = -(yarnImage.height - yarnImage.height * (yarn * 1.0 / originalYarn));
+    ctx.drawImage(
+        yarnImage,
+        yarnX,
+        yarnY
+    );
+}
+
 // Runs every USER_INPUT_WAIT_MS, so needs to be fast
 function reactToUserInput() {
 
@@ -502,6 +519,8 @@ function reactToUserInput() {
 
             // Update steps
             stepsTaken++;
+            if(yarn != 0) yarn--;
+            else alert("Out of yarn!");
 
             // Player reached the objective
             if(newCell.isObjective()) {
@@ -631,6 +650,7 @@ function computeBaseYarnAmt() {
 
 function beginMazeNav(extraYarn) {
     yarn = extraYarn + computeBaseYarnAmt();
+    originalYarn = yarn;
     showCanvas();
     reactToUserInput();
 }
