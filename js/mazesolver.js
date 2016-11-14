@@ -61,7 +61,7 @@ function solveMazeWithAStar(startCell, endCell, displayResult) {
 
         // End case: found the objective cell
         if(currentCell.equals(endCell)) {
-            optimalPath = 0; // reset optimal path before calculating
+            var optimalPath = 0; // reset optimal path before calculating
             while(currentCell.parent) {
                 if(displayResult) {
                     currentCell.draw("yellow");
@@ -71,7 +71,8 @@ function solveMazeWithAStar(startCell, endCell, displayResult) {
                 currentCell.parent = null;
                 currentCell = temp;
             }
-            return;
+
+            return optimalPath - 1;
         }
 
         // Normal case
@@ -113,5 +114,5 @@ function solveMaze(displayResult = true) {
     generateGraphForMaze();
 
     // TODO: save solution if it's already been solved to save time
-    solveMazeWithAStar(getCellAtUserLocation(), objectiveCell, displayResult);
+    return solveMazeWithAStar(getCellAtUserLocation(), objectiveCell, displayResult);
 }

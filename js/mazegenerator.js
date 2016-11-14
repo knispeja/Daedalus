@@ -73,7 +73,7 @@ var innerTorchRadius = 0;
 var torchRadius = 0;
 
 var stepsTaken = 0;
-var optimalPath = 0;
+var stepsToMinotaur = 0;
 
 var interpOffset = {x:0, y:0, mag:0};
 
@@ -439,16 +439,17 @@ function generateMaze() {
         if(newMaze[1][col].isEmpty()) {
             userLocation = {x: col, y: 1};
             newMaze[1][col].lastEnteredFrom = TOP;
-            objectiveCell = makeObjectiveCell(cols-1, row);
-            newMaze[0][col] = objectiveCell;
+            newMaze[0][col] = makeObjectiveCell(cols-1, row);
             break;
         }
     }
 
     // Place minotaur near the bottom somewhere
     for(var col=randomIntFromZero(cols-1); col<cols; col++) {
-        if(newMaze[rows-4][col].isEmpty()) {
-            newMaze[rows-4][col].containsMinotaur = true;
+        var cell = newMaze[rows-4][col];
+        if(cell.isEmpty()) {
+            cell.containsMinotaur = true;
+            objectiveCell = cell;
             break;
         }
     }
@@ -660,7 +661,7 @@ function reactToUserInput() {
             if (newCell.containsMinotaur) {
                 minotaurIsKilled = true;
                 newCell.containsMinotaur = false;
-                setMessage("I've slain the Minotaur... Time to find my way out.");
+                setMessage("I've slain the Minotaur in just " + stepsTaken + " steps... Time to find my way out.");
             }
 
             if (!minotaurIsKilled) {
@@ -757,10 +758,7 @@ function remakeMaze() {
     updateCanvasSize(false);
 
     maze = generateMaze();
-
-    // Solve the maze in order to get the optimal number of steps
-    // Function automatically changes optimalPath to the optimal number of steps
-    solveMaze(false); // false prevents solution from displaying
+    stepsToMinotaur = solveMaze(false);
 }
 
 function onKeyDown(event) {
@@ -843,6 +841,7 @@ function beginMazeNav(extraYarn) {
     yarn = extraYarn + computeBaseYarnAmt();
     originalYarn = yarn;
     showCanvas();
+    setMessage("The Minotaur is but " + stepsToMinotaur + " steps away...");
     reactToUserInput();
 }
 
