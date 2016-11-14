@@ -87,7 +87,9 @@ var yarnImage;
 var openDoorImage;
 var closedDoorImage;
 var minotaurImage;
+var minotaurEyesImage;
 
+var seenMinotaur = false;
 var minotaurIsKilled = false;
 
 function oppositeSide(side) {
@@ -125,6 +127,8 @@ function decideTileset() {
 
     minotaurImage = new Image();
     minotaurImage.src = "resources/minotaur/minotaur.png";
+    minotaurEyesImage = new Image();
+    minotaurEyesImage.src = "resources/minotaur/minotaur_eyes.png"
 
     wallTileImage = new Image();
     floorTileImage = new Image();
@@ -166,7 +170,7 @@ function Cell(type, x, y, color) {
         this.color = OBSTACLE_COLOR;
     }
 
-    this.draw = function(drawColor = this.color, xmod = this.x, ymod = this.y, noOffset = false) {
+    this.draw = function(drawColor = this.color, xmod = this.x, ymod = this.y, noOffset = false, eyes = false) {
         ctx.fillStyle = drawColor;
 
         var defMod = CELL_LENGTH;
@@ -187,6 +191,17 @@ function Cell(type, x, y, color) {
             userDrawnLocation.y = rectY;
         } else {
             var drawImg;
+
+            if (eyes) {
+                ctx.drawImage(
+                    minotaurEyesImage,
+                    rectX,
+                    rectY,
+                    CELL_LENGTH,
+                    CELL_LENGTH
+                );
+                return;
+            }
 
             if (this.isObstacle()) {
                 drawImg = wallTileImage;
@@ -232,7 +247,7 @@ function Cell(type, x, y, color) {
                 );
             }
 
-            if (this.containsMinotaur) {
+            if (this.containsMinotaur ) {
                 ctx.drawImage(
                     minotaurImage,
                     rectX,
@@ -244,8 +259,8 @@ function Cell(type, x, y, color) {
         }
     }
 
-    this.drawAt = function(x, y, drawColor = this.color, noOffset = false) {
-        this.draw(drawColor, x, y, noOffset);
+    this.drawAt = function(x, y, drawColor = this.color, noOffset = false, eyes = false) {
+        this.draw(drawColor, x, y, noOffset, eyes);
     }
 }
 
@@ -521,9 +536,24 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
         }
     }
     if(userDraw) userDraw.cell.drawAt(userDraw.x, userDraw.y, USER_COLOR, true);
-    if(minotaurDraw) minotaurDraw.cell.drawAt(minotaurDraw.x, minotaurDraw.y);
+    if(minotaurDraw) {
+        minotaurDraw.cell.drawAt(minotaurDraw.x, minotaurDraw.y);
+        setMessage("I can hear something breathing...");
+        seenMinotaur = true;
+    }
 
     drawLightingEffects();
+
+    // TODO: This could be done much more elegantly
+    if (!minotaurIsKilled)
+        objectiveCell.drawAt(
+            objectiveCell.x - userLocation.x + frameRadiusX,
+            objectiveCell.y - userLocation.y + frameRadiusY,
+            objectiveCell.color,
+            false,
+            true
+        );
+
     drawYarn();
 
     // Either continue interpolation, recall user input function, or stop entirely
@@ -604,7 +634,8 @@ function setMessage(text, noTimeout=false) {
     mazeText.innerHTML = message;
     if (!noTimeout) {
         setTimeout(function () {
-            document.getElementById("mazeText").innerHTML = "";
+            if (document.getElementById("mazeText").innerHTML === message)
+                document.getElementById("mazeText").innerHTML = "";
         }, MESSAGE_DURATION);
     }
 }
@@ -655,13 +686,12 @@ function reactToUserInput() {
         // Player moved to a valid space
         if(isTraversable(newCell) && !newCell.equals(oldCell)) {
 
-
             needsRedraw = true;
 
             if (newCell.containsMinotaur) {
                 minotaurIsKilled = true;
                 newCell.containsMinotaur = false;
-                setMessage("I've slain the Minotaur in just " + stepsTaken + " steps... Time to find my way out.");
+                setMessage("I've slain the Minotaur in just " + stepsTaken + " steps. Time to find my way out.");
             }
 
             if (!minotaurIsKilled) {
@@ -841,7 +871,7 @@ function beginMazeNav(extraYarn) {
     yarn = extraYarn + computeBaseYarnAmt();
     originalYarn = yarn;
     showCanvas();
-    setMessage("The Minotaur is but " + stepsToMinotaur + " steps away...");
+    setMessage("The Minotaur is but " + stepsToMinotaur + " steps away.");
     reactToUserInput();
 }
 
