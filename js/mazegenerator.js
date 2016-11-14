@@ -26,9 +26,28 @@ const OUTER_TORCH_MULTIPLIER = 1/2.2;
 const NUM_WALL_OPTIONS = 3;
 const NUM_FLOOR_OPTIONS = 3;
 
+const TOP = 1;
+const RIGHT = 2;
+const BOTTOM = 3;
+const LEFT = 4;
+
+function YarnContainer(numOptions, path) {
+    this.numOptions = numOptions;
+    this.path = path;
+    this.images = [];
+}
+var yarnPath = 'resources/yarn/';
+var yarnVertical = new YarnContainer(1, yarnPath + 'vertical/');
+var yarnHorizontal = new YarnContainer(1, yarnPath + 'horizontal/');
+var yarnTopToRight = new YarnContainer(1, yarnPath + 'topToRight/');
+var yarnRightToBot = new YarnContainer(1, yarnPath + 'rightToBot/');
+var yarnBotToLeft = new YarnContainer(1, yarnPath + 'botToLeft/');
+var yarnLeftToTop = new YarnContainer(1, yarnPath + 'leftToTop/');
+
 var canvas;
 var ctx;
 
+// user input directions
 var up;
 var down;
 var left;
@@ -65,7 +84,31 @@ var wallTileImage;
 var floorTileImage;
 var yarnImage;
 
+function oppositeSide(side) {
+    switch(side) {
+        case TOP:
+            return BOTTOM;
+        case BOTTOM:
+            return TOP;
+        case RIGHT:
+            return LEFT;
+        case LEFT:
+            return RIGHT;
+    }
+}
+
 function decideTileset() {
+
+    var yarnContainers = [yarnBotToLeft, yarnLeftToTop, yarnTopToRight, yarnRightToBot, yarnHorizontal, yarnVertical];
+    for (var i=0; i<yarnContainers.length; i++) {
+        var yarn = yarnContainers[i];
+        var yarnImages = yarn.images;
+        for (var j=0; j<yarn.numOptions; j++) {
+            yarnImages.push(new Image());
+            yarnImages[j].src = yarn.path + (j + 1) + ".jpg";
+        }
+    }
+
     wallTileImage = new Image();
     floorTileImage = new Image();
     yarnImage = new Image();
@@ -87,6 +130,9 @@ function Cell(type, x, y, color) {
     this.color = color;
     this.neighbors = [];
     this.accessibleNeighbors = [];
+
+    this.lastEnteredFrom = undefined;
+    this.stringImage = undefined;
 
     this.isObjective = function() {return this.type == OBJECTIVE_CELL;}
     this.isObstacle = function() {return this.type == OBSTACLE_CELL;}
@@ -143,6 +189,16 @@ function Cell(type, x, y, color) {
                 );
             } else {
                 ctx.fillRect(
+                    rectX,
+                    rectY,
+                    CELL_LENGTH,
+                    CELL_LENGTH
+                );
+            }
+
+            if (this.stringImage) {
+                ctx.drawImage(
+                    this.stringImage,
                     rectX,
                     rectY,
                     CELL_LENGTH,
@@ -239,7 +295,6 @@ function generateMazeKruskal(m) {
         // Consider tearing the wall down only if there are exactly
         // TWO empty neighbors -- any less/more and it wouldn't make sense
         if(n0 && n1 && !extra) {
-            var setsAreEqual = true;
             var set0 = n0.containingSet.set;
             var set1 = n1.containingSet.set;
 
@@ -487,6 +542,10 @@ function drawYarn() {
     );
 }
 
+function chooseYarnImage(yarnContainer) {
+    return yarnContainer.images[randomIndexOf(yarnContainer.images)];
+}
+
 // Runs every USER_INPUT_WAIT_MS, so needs to be fast
 function reactToUserInput() {
 
@@ -501,26 +560,66 @@ function reactToUserInput() {
         var newCell;
 
         // Determine new location if there is one...
-        if(up && userLocation.y != 0) newCell = maze[userLocation.y - 1][userLocation.x];
-        else if(down && userLocation.y != cols - 1) newCell = maze[userLocation.y + 1][userLocation.x];
+        var directionMoved = false;
+        if(up && userLocation.y != 0) {
+            newCell = maze[userLocation.y - 1][userLocation.x];
+            directionMoved = TOP;
+        }
+        else if(down && userLocation.y != cols - 1) {
+            newCell = maze[userLocation.y + 1][userLocation.x];
+            directionMoved = BOTTOM;
+        }
 
-        if(newCell && !newCell.isObstacle()) userLocation = {x: newCell.x, y: newCell.y};
-        else {
-            if(left) newCell = maze[userLocation.y][userLocation.x - 1];
-            else if(right) newCell = maze[userLocation.y][userLocation.x + 1];
-
-            if(newCell && !newCell.isObstacle()) userLocation = {x: newCell.x, y: newCell.y};
+        if(!newCell || newCell.isObstacle()) {
+            if(left) {
+                newCell = maze[userLocation.y][userLocation.x - 1];
+                directionMoved = LEFT;
+            }
+            else if(right) {
+                newCell = maze[userLocation.y][userLocation.x + 1];
+                directionMoved = RIGHT;
+            }
         }
 
         // Player moved to a valid space
         if(newCell && !newCell.isObstacle() && !newCell.equals(oldCell)) {
 
+            if(!newCell.stringImage && yarn)
+                newCell.lastEnteredFrom = oppositeSide(directionMoved);
+            else if (newCell.stringImage) {
+                yarn+=2;
+                newCell.stringImage = undefined;
+            }
+
+            userLocation = {x: newCell.x, y: newCell.y};
             needsRedraw = true;
+
+            // Set yarn image
+            if (!oldCell.stringImage && yarn) {
+                if ((oldCell.lastEnteredFrom === BOTTOM && directionMoved === TOP) ||
+                    (oldCell.lastEnteredFrom === TOP && directionMoved === BOTTOM)) {
+                    oldCell.stringImage = chooseYarnImage(yarnVertical);
+                } else if ((oldCell.lastEnteredFrom === LEFT && directionMoved === RIGHT) ||
+                    (oldCell.lastEnteredFrom === RIGHT && directionMoved === LEFT)) {
+                    oldCell.stringImage = chooseYarnImage(yarnHorizontal);
+                } else if ((oldCell.lastEnteredFrom === BOTTOM && directionMoved === LEFT) ||
+                    (oldCell.lastEnteredFrom === LEFT && directionMoved === BOTTOM)) {
+                    oldCell.stringImage = chooseYarnImage(yarnBotToLeft);
+                } else if ((oldCell.lastEnteredFrom === LEFT && directionMoved === TOP) ||
+                    (oldCell.lastEnteredFrom === TOP && directionMoved === LEFT)) {
+                    oldCell.stringImage = chooseYarnImage(yarnLeftToTop);
+                } else if ((oldCell.lastEnteredFrom === TOP && directionMoved === RIGHT) ||
+                    (oldCell.lastEnteredFrom === RIGHT && directionMoved === TOP)) {
+                    oldCell.stringImage = chooseYarnImage(yarnTopToRight);
+                } else if ((oldCell.lastEnteredFrom === RIGHT && directionMoved === BOTTOM) ||
+                    (oldCell.lastEnteredFrom === BOTTOM && directionMoved === RIGHT)) {
+                    oldCell.stringImage = chooseYarnImage(yarnRightToBot);
+                }
+            }
 
             // Update steps
             stepsTaken++;
             if(yarn != 0) yarn--;
-            else alert("Out of yarn!");
 
             // Player reached the objective
             if(newCell.isObjective()) {
@@ -645,6 +744,7 @@ function showCanvas() {
 }
 
 function computeBaseYarnAmt() {
+    return 10;
     return MAZE_DIMENSION * 2;
 }
 
