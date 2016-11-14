@@ -24,7 +24,7 @@ const INNER_TORCH_MULTIPLIER = 1/10.0;
 const OUTER_TORCH_MULTIPLIER = 1/2.2;
 
 const NUM_WALL_OPTIONS = 3;
-const NUM_FLOOR_OPTIONS = 3;
+const NUM_FLOOR_OPTIONS = 2;
 
 const TOP = 1;
 const RIGHT = 2;
@@ -37,12 +37,12 @@ function YarnContainer(numOptions, path) {
     this.images = [];
 }
 var yarnPath = 'resources/yarn/';
-var yarnVertical = new YarnContainer(1, yarnPath + 'vertical/');
-var yarnHorizontal = new YarnContainer(1, yarnPath + 'horizontal/');
-var yarnTopToRight = new YarnContainer(1, yarnPath + 'topToRight/');
-var yarnRightToBot = new YarnContainer(1, yarnPath + 'rightToBot/');
-var yarnBotToLeft = new YarnContainer(1, yarnPath + 'botToLeft/');
-var yarnLeftToTop = new YarnContainer(1, yarnPath + 'leftToTop/');
+var yarnVertical = new YarnContainer(3, yarnPath + 'vertical/');
+var yarnHorizontal = new YarnContainer(4, yarnPath + 'horizontal/');
+var yarnTopToRight = new YarnContainer(2, yarnPath + 'topToRight/');
+var yarnRightToBot = new YarnContainer(2, yarnPath + 'rightToBot/');
+var yarnBotToLeft = new YarnContainer(2, yarnPath + 'botToLeft/');
+var yarnLeftToTop = new YarnContainer(2, yarnPath + 'leftToTop/');
 
 var canvas;
 var ctx;
@@ -105,7 +105,7 @@ function decideTileset() {
         var yarnImages = yarn.images;
         for (var j=0; j<yarn.numOptions; j++) {
             yarnImages.push(new Image());
-            yarnImages[j].src = yarn.path + (j + 1) + ".jpg";
+            yarnImages[j].src = yarn.path + (j + 1) + ".png";
         }
     }
 
@@ -113,7 +113,7 @@ function decideTileset() {
     floorTileImage = new Image();
     yarnImage = new Image();
 
-    yarnImage.src = "resources/yarn.png";
+    yarnImage.src = "resources/yarn/yarn.png";
     
     var ext = ".jpg";
     var wallNum = randomIntFromZero(NUM_WALL_OPTIONS) + 1;
@@ -744,8 +744,7 @@ function showCanvas() {
 }
 
 function computeBaseYarnAmt() {
-    return 10;
-    return MAZE_DIMENSION * 2;
+    return MAZE_DIMENSION;
 }
 
 function beginMazeNav(extraYarn) {
