@@ -6,6 +6,17 @@ html, body {
     background-color: #9476AB;
 }
 
+#mazeText {
+    color: white;
+    top: 10px;
+    right: 10px;
+    padding: 30px;
+    padding-right: 80px;
+    position: absolute;
+    font-size: 22pt;
+    z-index: 1;
+}
+
 #container {
     position: relative;
     top: 5%;

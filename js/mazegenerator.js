@@ -1,4 +1,5 @@
 const MAZE_DIMENSION = 40; // in cells
+const MESSAGE_DURATION = 6500; // in ms
 
 const CELL_LENGTH = 75.0; // in px
 const HALF_CELL = CELL_LENGTH / 2.0;
@@ -24,7 +25,7 @@ const INNER_TORCH_MULTIPLIER = 1/10.0;
 const OUTER_TORCH_MULTIPLIER = 1/2.2;
 
 const NUM_WALL_OPTIONS = 3;
-const NUM_FLOOR_OPTIONS = 2;
+const NUM_FLOOR_OPTIONS = 1;
 
 const TOP = 1;
 const RIGHT = 2;
@@ -564,6 +565,23 @@ function chooseYarnImage(yarnContainer) {
     return yarnContainer.images[randomIndexOf(yarnContainer.images)];
 }
 
+function setMessage(text) {
+    var mazeText = document.getElementById("mazeText");
+    var message =
+        "<i>\"" +
+        text +
+        "\"</i>";
+    if (mazeText.innerHTML === message) return; // don't push message if it is equivalent
+    mazeText.innerHTML = message;
+    setTimeout(function() {
+        document.getElementById("mazeText").innerHTML = "";
+    }, MESSAGE_DURATION);
+}
+
+function isTraversable(cell) {
+    return !(!cell || cell.isObstacle() || (cell.isObjective() && !minotaurIsKilled));
+}
+
 // Runs every USER_INPUT_WAIT_MS, so needs to be fast
 function reactToUserInput() {
 
@@ -588,7 +606,7 @@ function reactToUserInput() {
             directionMoved = BOTTOM;
         }
 
-        if(!newCell || newCell.isObstacle()) {
+        if(!isTraversable(newCell)) {
             if(left) {
                 newCell = maze[userLocation.y][userLocation.x - 1];
                 directionMoved = LEFT;
@@ -599,45 +617,58 @@ function reactToUserInput() {
             }
         }
 
-        // Player moved to a valid space
-        if(newCell && !newCell.isObstacle() && !newCell.equals(oldCell)) {
+        if (newCell && newCell.isObjective() && !minotaurIsKilled) {
+            setMessage("I can't leave until the Minotaur lies dead.");
+        }
 
-            if(!newCell.stringImage && yarn)
-                newCell.lastEnteredFrom = oppositeSide(directionMoved);
-            else if (newCell.stringImage) {
-                yarn+=2;
-                newCell.stringImage = undefined;
-            }
+        // Player moved to a valid space
+        if(isTraversable(newCell) && !newCell.equals(oldCell)) {
 
             userLocation = {x: newCell.x, y: newCell.y};
             needsRedraw = true;
 
-            // Set yarn image
-            if (!oldCell.stringImage && yarn) {
-                if ((oldCell.lastEnteredFrom === BOTTOM && directionMoved === TOP) ||
-                    (oldCell.lastEnteredFrom === TOP && directionMoved === BOTTOM)) {
-                    oldCell.stringImage = chooseYarnImage(yarnVertical);
-                } else if ((oldCell.lastEnteredFrom === LEFT && directionMoved === RIGHT) ||
-                    (oldCell.lastEnteredFrom === RIGHT && directionMoved === LEFT)) {
-                    oldCell.stringImage = chooseYarnImage(yarnHorizontal);
-                } else if ((oldCell.lastEnteredFrom === BOTTOM && directionMoved === LEFT) ||
-                    (oldCell.lastEnteredFrom === LEFT && directionMoved === BOTTOM)) {
-                    oldCell.stringImage = chooseYarnImage(yarnBotToLeft);
-                } else if ((oldCell.lastEnteredFrom === LEFT && directionMoved === TOP) ||
-                    (oldCell.lastEnteredFrom === TOP && directionMoved === LEFT)) {
-                    oldCell.stringImage = chooseYarnImage(yarnLeftToTop);
-                } else if ((oldCell.lastEnteredFrom === TOP && directionMoved === RIGHT) ||
-                    (oldCell.lastEnteredFrom === RIGHT && directionMoved === TOP)) {
-                    oldCell.stringImage = chooseYarnImage(yarnTopToRight);
-                } else if ((oldCell.lastEnteredFrom === RIGHT && directionMoved === BOTTOM) ||
-                    (oldCell.lastEnteredFrom === BOTTOM && directionMoved === RIGHT)) {
-                    oldCell.stringImage = chooseYarnImage(yarnRightToBot);
+            if (!minotaurIsKilled) {
+                // Pick up yarn or set lastEnteredFrom
+                if (!newCell.stringImage && yarn)
+                    newCell.lastEnteredFrom = oppositeSide(directionMoved);
+                else if (newCell.stringImage) {
+                    yarn += 2;
+                    newCell.stringImage = undefined;
+                }
+
+                // Set yarn image
+                if (!oldCell.stringImage && yarn) {
+                    if ((oldCell.lastEnteredFrom === BOTTOM && directionMoved === TOP) ||
+                        (oldCell.lastEnteredFrom === TOP && directionMoved === BOTTOM)) {
+                        oldCell.stringImage = chooseYarnImage(yarnVertical);
+                    } else if ((oldCell.lastEnteredFrom === LEFT && directionMoved === RIGHT) ||
+                        (oldCell.lastEnteredFrom === RIGHT && directionMoved === LEFT)) {
+                        oldCell.stringImage = chooseYarnImage(yarnHorizontal);
+                    } else if ((oldCell.lastEnteredFrom === BOTTOM && directionMoved === LEFT) ||
+                        (oldCell.lastEnteredFrom === LEFT && directionMoved === BOTTOM)) {
+                        oldCell.stringImage = chooseYarnImage(yarnBotToLeft);
+                    } else if ((oldCell.lastEnteredFrom === LEFT && directionMoved === TOP) ||
+                        (oldCell.lastEnteredFrom === TOP && directionMoved === LEFT)) {
+                        oldCell.stringImage = chooseYarnImage(yarnLeftToTop);
+                    } else if ((oldCell.lastEnteredFrom === TOP && directionMoved === RIGHT) ||
+                        (oldCell.lastEnteredFrom === RIGHT && directionMoved === TOP)) {
+                        oldCell.stringImage = chooseYarnImage(yarnTopToRight);
+                    } else if ((oldCell.lastEnteredFrom === RIGHT && directionMoved === BOTTOM) ||
+                        (oldCell.lastEnteredFrom === BOTTOM && directionMoved === RIGHT)) {
+                        oldCell.stringImage = chooseYarnImage(yarnRightToBot);
+                    }
+                }
+
+                // Update yarn
+                if(yarn != 0) {
+                    yarn--;
+                    if(yarn === 0)
+                        setMessage("I've run out of thread...");
                 }
             }
 
             // Update steps
             stepsTaken++;
-            if(yarn != 0) yarn--;
 
             // Player reached the objective
             if(newCell.isObjective()) {
