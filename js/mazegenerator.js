@@ -12,7 +12,7 @@ const OBSTACLE_CELL = "obstacle";
 const EMPTY_CELL = "empty";
 const OBJECTIVE_CELL = "objective";
 
-const INTERPOLATION_INCREMENT = 1; // in px
+const INTERPOLATION_INCREMENT = 2; // in px
 
 const TORCH_INNER_RADIUS_LOWER = 0.40;
 const TORCH_INNER_RADIUS_UPPER = 0.45;
@@ -22,6 +22,9 @@ const TORCH_FLICKER_FRAMES_LOWER = 9;
 const TORCH_FLICKER_FRAMES_UPPER = 19;
 const INNER_TORCH_MULTIPLIER = 1/10.0;
 const OUTER_TORCH_MULTIPLIER = 1/2.2;
+
+const NUM_WALL_OPTIONS = 1;
+const NUM_FLOOR_OPTIONS = 1;
 
 var canvas;
 var ctx;
@@ -54,14 +57,21 @@ var optimalPath = 0;
 
 var interpOffset = {x:0, y:0, mag:0};
 
+var yarn = 0;
+var maxQuality = true;
+
 var wallTileImage;
 var floorTileImage;
 function decideTileset() {
     wallTileImage = new Image();
     floorTileImage = new Image();
-
-    wallTileImage.src = "resources/wall/1.jpg";
-    floorTileImage.src = "resources/floor/1.jpg";
+    
+    var ext = ".jpg";
+    var wallNum = randomIntFromZero(NUM_WALL_OPTIONS) + 1;
+    wallTileImage.src = "resources/wall/" + wallNum + ext;
+    
+    var floorNum = randomIntFromZero(NUM_FLOOR_OPTIONS) + 1;
+    floorTileImage.src = "resources/floor/" + floorNum + ext;
 }
 
 function Cell(type, x, y, color) {
@@ -109,19 +119,30 @@ function Cell(type, x, y, color) {
             userDrawnLocation.y = rectY;
         } else {
             var drawImg;
-            if (this.isObstacle()) {
-                drawImg = wallTileImage;
-            } else if (this.isEmpty()) {
-                drawImg = floorTileImage;
+            if (maxQuality) {
+                if (this.isObstacle()) {
+                    drawImg = wallTileImage;
+                } else if (this.isEmpty()) {
+                    drawImg = floorTileImage;
+                }
             }
 
-            ctx.drawImage(
-                drawImg, 
-                rectX,
-                rectY, 
-                CELL_LENGTH, 
-                CELL_LENGTH
-            );
+            if (drawImg) {
+                ctx.drawImage(
+                    drawImg,
+                    rectX,
+                    rectY,
+                    CELL_LENGTH,
+                    CELL_LENGTH
+                );
+            } else {
+                ctx.fillRect(
+                    rectX,
+                    rectY,
+                    CELL_LENGTH,
+                    CELL_LENGTH
+                );
+            }
         }
     }
 
@@ -377,9 +398,9 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
             if (userLocation.x == col && userLocation.y == row) {
                isUser = true;
             }
-            // if (cell.isEmpty() && !isUser) {
-            //     continue;
-            // }
+            if (!maxQuality && cell.isEmpty() && !isUser) {
+                continue;
+            }
 
             var x = (col - userLocation.x) + frameRadiusX;
             var y = (row - userLocation.y) + frameRadiusY;
@@ -421,26 +442,29 @@ function drawLightingEffects() {
     );
     gradient.addColorStop(0, "rgba(248, 195, 119, 0.25)");
 
-    if (++torchFlickerCounter == torchFlickerFrames) {
+    if (maxQuality) {
+        if (++torchFlickerCounter == torchFlickerFrames) {
 
-        torchFlickerFrames = Math.floor(randRange(
-            TORCH_FLICKER_FRAMES_LOWER,
-            TORCH_FLICKER_FRAMES_UPPER
-        ));
+            torchFlickerFrames = Math.floor(randRange(
+                TORCH_FLICKER_FRAMES_LOWER,
+                TORCH_FLICKER_FRAMES_UPPER
+            ));
 
-        torchFlickerCounter = 0;
-        innerTorchRadius = randRange(
-            TORCH_INNER_RADIUS_LOWER,
-            TORCH_INNER_RADIUS_UPPER
-        ).toFixed(2);
-        torchRadius = randRange(
-            TORCH_RADIUS_LOWER,
-            TORCH_RADIUS_UPPER
-        ).toFixed(2);
+            torchFlickerCounter = 0;
+            innerTorchRadius = randRange(
+                TORCH_INNER_RADIUS_LOWER,
+                TORCH_INNER_RADIUS_UPPER
+            ).toFixed(2);
+            torchRadius = randRange(
+                TORCH_RADIUS_LOWER,
+                TORCH_RADIUS_UPPER
+            ).toFixed(2);
+        }
+
+        gradient.addColorStop(0.5, "rgba(118, 75, 9, " + innerTorchRadius + ")");
+        gradient.addColorStop(0.80, "rgba(18, 0, 0, " + torchRadius + ")");
     }
 
-    gradient.addColorStop(0.5, "rgba(118, 75, 9, " + innerTorchRadius + ")");
-    gradient.addColorStop(0.80, "rgba(18, 0, 0, " + torchRadius + ")");
     gradient.addColorStop(1, "rgba(0, 0, 0, 1.00)");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -535,7 +559,10 @@ function onKeyDown(event) {
     var keyCode = event.keyCode;
 
     // Respond to directional inputs
-    switch(keyCode) {     
+    switch(keyCode) {
+        case 27:  //escape
+            maxQuality = !maxQuality;
+            break;
         case 38:  //up arrow
         case 87:  //w
             event.preventDefault();
@@ -598,7 +625,12 @@ function showCanvas() {
     canvas.style.display="block";
 }
 
-function beginMazeNav() {
+function computeBaseYarnAmt() {
+    return MAZE_DIMENSION * 2;
+}
+
+function beginMazeNav(extraYarn) {
+    yarn = extraYarn + computeBaseYarnAmt();
     showCanvas();
     reactToUserInput();
 }

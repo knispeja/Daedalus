@@ -4,6 +4,7 @@ var HIDE = "none";
 var TRUE_FALSE_OPTIONS = ['True', 'False'];
 var MULTIPLE_CHOICE_START_CODE = 65; // capital a:'A'
 var TOTAL_QUESTIONS_ASKED = 10;
+var YARN_PER_CORRECT_ANSWER = 25;
 var CORRECT_OPTION_COLOR = '#006400';
 var INCORRECT_OPTION_COLOR = '#7F0000';
 
@@ -128,7 +129,7 @@ function toggleNextBtnExplanationShown() {
 }
 
 function skipToGame() {
-    beginMazeNav();
+    beginMazeNav(YARN_PER_CORRECT_ANSWER * numberCorrect);
     document.getElementById("progress").style.display = HIDE;
     document.getElementById("container").style.display = HIDE;
     document.getElementById("navcontainer").style.display = HIDE;

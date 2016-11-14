@@ -1,18 +1,11 @@
-// Used for form inputs that only accept numbers
-function numericOnly() {
-    return event.charCode >= 48 && event.charCode <= 57;
-}
-
-// Downloads maze as an image
-function downloadMaze(link, fileName) {
-    link.href = canvas.toDataURL();
-    link.download = fileName;
+function randomIntFromZero(value) {
+    return Math.floor(Math.random() * value);
 }
 
 // Returns a random index from all possible in the given array, or -1 if it is empty
 function randomIndexOf(arr) {
     if(arr.length < 1) return -1;
-    return Math.floor(Math.random() * arr.length);
+    return randomIntFromZero(arr.length);
 }
 
 function randRange(lower, upper) {
@@ -29,4 +22,13 @@ function shuffleArray(arr) {
         indices.splice(indexIndex, 1);
     }
     return shuffled;
+}
+
+// Checks if the given address exists
+function urlExists(url)
+{
+    var http = new XMLHttpRequest();
+    http.open('HEAD', url, false);
+    http.send();
+    return http.status!=404;
 }
