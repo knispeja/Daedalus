@@ -333,7 +333,7 @@ var QUESTIONS = [
         [
             "The death of Medusa",
             "The injury of Zeus",
-            "The death of Hercules",
+            "The death of Heracles",
             "The mating of a horse and an eagle"
         ]
     ),
@@ -342,7 +342,7 @@ var QUESTIONS = [
         [
             "Perseus",
             "Theseus",
-            "Hercules"
+            "Heracles"
         ]
     ),
     makeTrueFalseQuestion(
@@ -371,7 +371,7 @@ var QUESTIONS = [
         ]
     ),
     makeTrueFalseQuestion(
-        "Of Castor and Pollux, the former was naturally immortal.",
+        "Of Castor and Pollux, the former is naturally immortal.",
         FALSE,
         "It was Pollux who was born immortal."
     ),
@@ -394,9 +394,86 @@ var QUESTIONS = [
             "Poseidon"
         ]
     ),
-    makeTrueFalseQuestion( // #50
-        "Asclepius was killed by Zeus.",
+    makeTrueFalseQuestion(
+        "Asclepius is killed by Zeus.",
         TRUE,
-        "This was a punishment for bringing people back from the dead."
+        "Thisiswas a punishment for bringing people back from the dead."
+    ),
+    makeMultipleChoiceQuestion(
+        "How do the Argonauts pass safely by the Sirens?",
+        [
+            "Orpheus drowns out their singing with his own, more beautiful music.",
+            "They fill their ears with wax to block out the singing.",
+            "They tie each other to various parts of the boat."
+        ]
+    ),
+    makeTrueFalseQuestion(
+        "Hades kidnapped Persephone.",
+        TRUE
+    ),
+    makeMultipleChoiceQuestion(
+        "Select the pair that does not fit:",
+        [
+            "Narcissus and Isis",
+            "Ceyx and Alcyone",
+            "Cupid and Psyche",
+            "Hero and Leander",
+            "Orpheus and Eurydice"
+        ],
+        "All other options are famous lovers."
+    ),
+    makeMultipleChoiceQuestion(
+        "Who is Daedalus?",
+        [
+            "The creator of the Labyrinth in Crete",
+            "The creator of this website",
+            "The creator of <i>Argo</i>",
+            "The son of Icarus"
+        ]
+    ),
+    makeTrueFalseQuestion(
+        "Minos is a king of Crete.",
+        TRUE
+    ),
+    makeTrueFalseQuestion(
+        "The Minotaur is the son of Minos' daughter.",
+        FALSE,
+        "The Minotaur was born of Minos' wife, Pasiphae."
+    ),
+    makeMultipleChoiceQuestion(
+        "From which part of Zeus is Athena classically born?",
+        [
+            "The head",
+            "The breast",
+            "The thigh"
+        ],
+        "This is symbolic of her great wisdom."
+    ),
+    makeMultipleChoiceQuestion(
+        "What nymph does Apollo pursue?",
+        [
+            "Daphne",
+            "Thetis",
+            "Echo"
+        ]
+    ),
+    makeMultipleChoiceQuestion(
+        "Which goddess is not chaste?",
+        [
+            "Artemis",
+            "Athena",
+            "Hestia",
+            "Hebe"
+        ],
+        "Hebe is even married to Heracles."
+    ),
+    makeMultipleChoiceQuestion( // #60
+        "Which is an epithet for Hera?",
+        [
+            "Ox-eyed",
+            "Gray-eyed",
+            "Owl-eyed"
+        ],
+        "The other options are epithets for Athena."
     )
 ];
