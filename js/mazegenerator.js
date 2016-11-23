@@ -90,6 +90,7 @@ var stepsToMinotaur = 0;
 
 var interpOffset = {x:0, y:0, mag:0};
 
+var lastYarnIndex = 0;
 var originalYarn = 0;
 var yarn = 0;
 var maxQuality = true;
@@ -666,7 +667,12 @@ function drawYarn() {
 }
 
 function chooseYarnImage(yarnContainer) {
-    return yarnContainer.images[randomIndexOf(yarnContainer.images)];
+    var i = randomIndexOf(yarnContainer.images);
+    if (i == lastYarnIndex) {
+        if (++i >= yarnContainer.images.length) i = 0;
+    }
+    lastYarnIndex = i;
+    return yarnContainer.images[i];
 }
 
 function setMessage(text, noTimeout=false) {
