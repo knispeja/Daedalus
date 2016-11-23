@@ -137,7 +137,7 @@ function decideTileset() {
     }
 
     theseusTilesetImage = new Image();
-    theseusTilesetImage.src = "resources/theseus/theseus_tileset.png";
+    theseusTilesetImage.src = "resources/theseus_tileset.png";
 
     openDoorImage = new Image();
     openDoorImage.src = "resources/door_open.png";
