@@ -31,13 +31,18 @@ const TORCH_FLICKER_FRAMES_UPPER = 19;
 const INNER_TORCH_MULTIPLIER = 1/10.0;
 const OUTER_TORCH_MULTIPLIER = 1/2.2;
 
+const THESEUS_ANIMATION_TICKS_PER_FRAME = CELL_LENGTH/4;
+const THESUES_ANIMATION_FRAMES = 3;
+
+const TILESET_TILE_SIZE = 32; // in px
+
 const NUM_WALL_OPTIONS = 3;
 const NUM_FLOOR_OPTIONS = 1;
 
-const TOP = 1;
-const RIGHT = 2;
-const BOTTOM = 3;
-const LEFT = 4;
+const TOP = 4;
+const RIGHT = 3;
+const BOTTOM = 1;
+const LEFT = 2;
 
 function YarnContainer(numOptions, path) {
     this.numOptions = numOptions;
@@ -95,6 +100,10 @@ var openDoorImage;
 var closedDoorImage;
 var minotaurImage;
 var minotaurEyesImage;
+var theseusTilesetImage;
+
+var theseusAnimationTick = 0;
+var theseusAnimationFrame = 0;
 
 var mazeDimension;
 
@@ -126,10 +135,13 @@ function decideTileset() {
         }
     }
 
+    theseusTilesetImage = new Image();
+    theseusTilesetImage.src = "resources/theseus/theseus_tileset.png";
+
     openDoorImage = new Image();
-    openDoorImage.src = 'resources/door_open.png';
+    openDoorImage.src = "resources/door_open.png";
     closedDoorImage = new Image();
-    closedDoorImage.src = 'resources/door_closed.png';
+    closedDoorImage.src = "resources/door_closed.png";
 
     yarnImage = new Image();
     yarnImage.src = "resources/yarn/yarn.png";
@@ -190,14 +202,33 @@ function Cell(type, x, y, color) {
         var rectY = ymod * CELL_LENGTH + yOff - defMod;
 
         if (drawColor == USER_COLOR) {
-            ctx.fillRect(
-                rectX, 
-                rectY, 
-                CELL_LENGTH, 
+
+            if (interpOffset.x || interpOffset.y) {
+                if (++theseusAnimationTick > THESEUS_ANIMATION_TICKS_PER_FRAME) {
+                    if (++theseusAnimationFrame == THESUES_ANIMATION_FRAMES) {
+                        theseusAnimationFrame = 0;
+                    }
+                    theseusAnimationTick = 0;
+                }
+            }
+
+            var clipX = theseusAnimationFrame * TILESET_TILE_SIZE;
+            var clipY = 0;
+
+            ctx.drawImage(
+                theseusTilesetImage,
+                clipX,
+                clipY,
+                TILESET_TILE_SIZE,
+                TILESET_TILE_SIZE,
+                rectX,
+                rectY,
+                CELL_LENGTH,
                 CELL_LENGTH
             );
             userDrawnLocation.x = rectX;
             userDrawnLocation.y = rectY;
+            return;
         } else {
             var drawImg;
 
