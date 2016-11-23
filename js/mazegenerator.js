@@ -1,22 +1,34 @@
-const MESSAGE_DURATION = 6500; // in ms
+// Special draw enums
+const USER = 1;
+const MINOTAUR_EYES = 2;
 
-const MAZE_DIMENSION_MAX = 150; // in cells
-const MAZE_DIMENSION_MIN_PERCENT = 0.24;
-
-const KRUSKAL_MIN_THRESHOLD = 0.4;
-
-const CELL_LENGTH = 64.0; // in px
-const HALF_CELL = CELL_LENGTH / 2.0;
-
+// Maze generation enums
 const KRUSKAL = 1;
 const RECURSIVE_BACKTRACKING = 2;
 
+// Directional enums
+const TOP = 4;
+const RIGHT = 3;
+const BOTTOM = 1;
+const LEFT = 2;
+
+// Cell type enums
 const OBSTACLE_CELL = "obstacle";
 const EMPTY_CELL = "empty";
 const OBJECTIVE_CELL = "objective";
 
+// Difficulty-related constants
+const KRUSKAL_MIN_THRESHOLD = 0.4;
+const MAZE_DIMENSION_MAX = 150; // in cells
+const MAZE_DIMENSION_MIN_PERCENT = 0.24;
+
+// Quality of life and rendering constants
+const MESSAGE_DURATION = 6500; // in ms
+const CELL_LENGTH = 64.0; // in px
+const HALF_CELL = CELL_LENGTH / 2.0;
 const INTERPOLATION_INCREMENT = 2; // in px, 1 is perfect rendering
 
+// Torch constants
 const TORCH_INNER_RADIUS_LOWER = 0.40;
 const TORCH_INNER_RADIUS_UPPER = 0.45;
 const TORCH_RADIUS_LOWER = 0.55;
@@ -26,24 +38,16 @@ const TORCH_FLICKER_FRAMES_UPPER = 19;
 const INNER_TORCH_MULTIPLIER = 1/10.0;
 const OUTER_TORCH_MULTIPLIER = 1/2.2;
 
+// Theseus animation constants
 const THESEUS_ANIMATION_TICKS_PER_FRAME = CELL_LENGTH/4;
 const THESUES_ANIMATION_FRAMES = 3;
-
 const TILESET_TILE_SIZE = 32; // in px
 
+// Number of options for various images
 const NUM_WALL_OPTIONS = 3;
 const NUM_FLOOR_OPTIONS = 1;
 
-// Special draw constants
-const USER = 1;
-const MINOTAUR_EYES = 2;
-
-// Directional constants
-const TOP = 4;
-const RIGHT = 3;
-const BOTTOM = 1;
-const LEFT = 2;
-
+// Yarn container stuff
 function YarnContainer(numOptions, path) {
     this.numOptions = numOptions;
     this.path = path;
@@ -546,7 +550,11 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
             cell.drawAt(x, y);
         }
     }
+
+    // Draw the user
     if(userDraw) userDraw.cell.drawAt(userDraw.x, userDraw.y, USER);
+
+    // Draw the minotaur
     if(minotaurDraw) {
         minotaurDraw.cell.drawAt(minotaurDraw.x, minotaurDraw.y);
         if(!seenMinotaur) {
@@ -555,9 +563,10 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
         }
     }
 
+    // Overlay darkness/torch effects over the scene
     drawLightingEffects();
 
-    // TODO: This could be done much more elegantly
+    // Draw minotaur eyes through the darkness
     if (!minotaurIsKilled)
         objectiveCell.drawAt(
             objectiveCell.x - userLocation.x + frameRadiusX,
@@ -565,6 +574,7 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
             MINOTAUR_EYES
         );
 
+    // Draw yarn graphic off to the left
     drawYarn();
 
     // Either continue interpolation, recall user input function, or stop entirely
