@@ -167,7 +167,8 @@ function skipToGame() {
 
     document.getElementById("progress").style.display = HIDE;
     document.getElementById("container").style.display = HIDE;
-    document.getElementById("navcontainer").style.display = HIDE;
+    tradeBtn = document.getElementById("skip");
+    tradeBtn.innerHTML = "Trade 100 Yarn for Hint";
 
     setTimeout(function() {
         beginMazeNav(1 - (numberCorrect*1.0/(TOTAL_QUESTIONS_ASKED)));

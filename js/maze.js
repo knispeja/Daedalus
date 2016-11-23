@@ -73,9 +73,10 @@ var yarnRightToBot = new YarnContainer(2, yarnPath + 'rightToBot/');
 var yarnBotToLeft = new YarnContainer(2, yarnPath + 'botToLeft/');
 var yarnLeftToTop = new YarnContainer(2, yarnPath + 'leftToTop/');
 
-// Global canvas and context
+// Global DOM elements
 var canvas;
 var ctx;
+var tradeBtn;
 
 // User input directionals
 var up;
@@ -105,6 +106,7 @@ var trueFrameRadiusY;
 var interpOffset = {x:0, y:0, mag:0}; // used in interpolation
 var interpolationAdj = 0; // adjusts interpolation increment for higher performance
 var lastYarnIndex = 0; // helps prevent repetitive yarn images
+var showYarnAmount = false;
 var theseusAnimationTick = 0; // ticks up every frame
 var theseusAnimationFrame = 0; // animation frame Theseus is on -- changed by theseusAnimationTick
 
@@ -472,7 +474,7 @@ function drawYarn() {
     );
 
     // Draw numerical yarn amount overtop of the graphic
-    if (!highQualityMode) {
+    if (showYarnAmount) {
         ctx.fillStyle = "white";
         ctx.font="16pt Arial";
         ctx.fillText(yarn, yarnX, 35);
@@ -722,10 +724,27 @@ function onKeyUp(event) {
     }
 }
 
-// Add event listeners for moving about the maze
+function tradeYarn() {
+    alert("TODO");
+}
+
+function onTradeHover() {
+    showYarnAmount = true;
+}
+
+function onTradeLeave() {
+    showYarnAmount = false;
+}
+
 function addEventListeners() {
+    // Keypresses
     window.addEventListener("keydown", onKeyDown, false);
     window.addEventListener("keyup", onKeyUp, false);
+
+    // Button hover/click
+    tradeBtn.onclick = tradeYarn;
+    tradeBtn.addEventListener("mouseenter", onTradeHover, false);
+    tradeBtn.addEventListener("mouseleave", onTradeLeave, false);
 }
 
 // Runs on load

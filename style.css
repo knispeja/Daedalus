@@ -70,11 +70,11 @@ html, body {
 .nav {
     float: right;
     text-align: right;
-    margin: 8px;
+    margin: 24px;
     padding: 8px;
     background-color: #210439;
     border-radius: 5px;
-    color: #9476AB;
+    color: #E9D0EA;
     font-size: 16pt;
 }
 
