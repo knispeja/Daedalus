@@ -96,7 +96,7 @@ var userDrawnLocation = {x:0, y:0};
 var directionMoved = BOTTOM;
 
 // Drawing-related
-var maxQuality = true; // same as "notHighPerformanceMode" (toggle via ESC)
+var highQualityMode = true; // same as "!highPerformanceMode" (toggle via ESC)
 var mazeDimension; // height/width of the maze in cells
 var frameRadiusX;
 var frameRadiusY;
@@ -457,6 +457,7 @@ function drawLightingEffects() {
 }
 
 function drawYarn() {
+    // Draw yarn graphic -- move it upward as the user loses yarn
     var yarnX = (canvas.width - trueFrameRadiusX * CELL_LENGTH) / 8.0;
     var yarnY = -(yarnImage.height - yarnImage.height * (yarn * 1.0 / originalYarn));
     ctx.drawImage(
@@ -464,6 +465,13 @@ function drawYarn() {
         yarnX,
         yarnY
     );
+
+    // Draw numerical yarn amount overtop of the graphic
+    if (!highQualityMode) {
+        ctx.fillStyle = "white";
+        ctx.font="16pt Arial";
+        ctx.fillText(yarn, yarnX, 35);
+    }
 }
 
 function setMessage(text, noTimeout=false) {
@@ -658,9 +666,9 @@ function beginMazeNav(difficulty) {
 function onKeyDown(event) {
     switch(event.keyCode) {
         case 27:  //escape
-            maxQuality = !maxQuality;
-            interpolationAdj = maxQuality ? 0 : 1;
-            setMessage(maxQuality ?
+            highQualityMode = !highQualityMode;
+            interpolationAdj = highQualityMode ? 0 : 1;
+            setMessage(highQualityMode ?
                 "High performance mode disabled." :
                 "High performance mode enabled."
             );

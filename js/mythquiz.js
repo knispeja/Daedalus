@@ -1,10 +1,11 @@
 // Constants
+const MULTIPLE_CHOICE_USE_LETTERS = false; // whether or not to prefix multiple choice answers with letters
 const MULTIPLE_CHOICE_START_CODE = 65; // capital a:'A'
 const TOTAL_QUESTIONS_ASKED = 10;
 const CORRECT_OPTION_COLOR = '#006400';
 const INCORRECT_OPTION_COLOR = '#7F0000';
 const INSTRUCTIONS = [
-    "Welcome to Daedalus!<br>Click to continue, or press Escape to skip.",
+    "Welcome to Daedalus' Game!<br>Click to continue, or press Escape to skip.",
     "This is a game based on Greek and Roman mythology.",
     "You will first be presented with a quiz with 10 randomly-selected questions.",
     "Try to get as many as you can correct!<br>Your score determines the difficulty of the subsequent game.",
@@ -78,8 +79,10 @@ function makeMultipleChoiceQuestion(question, options, explanation="", answer=0,
     }
 
     // Append letters to the beginning of the multiple choice questions
-    // var code = MULTIPLE_CHOICE_START_CODE;
-    // options = options.map(function(opt) {return String.fromCharCode(code++) + ". " + opt});
+    if (MULTIPLE_CHOICE_USE_LETTERS) {
+        var code = MULTIPLE_CHOICE_START_CODE;
+        options = options.map(function(opt) {return String.fromCharCode(code++) + ". " + opt});
+    }
 
     return new Question(
         question,
