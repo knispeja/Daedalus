@@ -174,7 +174,7 @@ function Cell(type, x, y, image) {
 
             if (interpOffset.x || interpOffset.y) {
                 if (++theseusAnimationTick > THESEUS_ANIMATION_TICKS_PER_FRAME) {
-                    if (++theseusAnimationFrame == THESUES_ANIMATION_FRAMES) {
+                    if (++theseusAnimationFrame === THESUES_ANIMATION_FRAMES) {
                         theseusAnimationFrame = 0;
                     }
                     theseusAnimationTick = 0;
@@ -310,7 +310,7 @@ function imageInit() {
 // Choose an appropriate yarn image from the container
 function chooseYarnImage(yarnContainer) {
     var i = randomIndexOf(yarnContainer.images);
-    if (i == lastYarnIndex) {
+    if (i === lastYarnIndex) {
         if (++i >= yarnContainer.images.length) i = 0;
     }
     lastYarnIndex = i;
@@ -323,13 +323,13 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
     // Clear the canvas so we only have to draw the walls
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if(recurseCount == 0) {
+    if(recurseCount === 0) {
         var offX, offY;
-        if (oldUserLocation.x == userLocation.x) offX = 0;
+        if (oldUserLocation.x === userLocation.x) offX = 0;
         else if (oldUserLocation.x > userLocation.x) offX = -1;
         else offX = 1;
 
-        if (oldUserLocation.y == userLocation.y) offY = 0;
+        if (oldUserLocation.y === userLocation.y) offY = 0;
         else if (oldUserLocation.y > userLocation.y) offY = -1;
         else offY = 1;
 
@@ -360,7 +360,7 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
 
             var cell = maze[row][col];
             var isUser = false;
-            if (userLocation.x == col && userLocation.y == row) {
+            if (userLocation.x === col && userLocation.y === row) {
                isUser = true;
             }
 
@@ -406,7 +406,7 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
 
     // Either continue interpolation, recall user input function, or stop entirely
     if (interpolate) {
-        if (interpOffset.mag == 0) {
+        if (interpOffset.mag === 0) {
             reactToUserInput();
         } else {
             setTimeout(function () {
@@ -430,7 +430,7 @@ function drawLightingEffects() {
     );
     gradient.addColorStop(0, "rgba(248, 195, 119, 0.25)");
 
-    if (++torchFlickerCounter == torchFlickerFrames) {
+    if (++torchFlickerCounter === torchFlickerFrames) {
 
         torchFlickerFrames = Math.floor(randRange(
             TORCH_FLICKER_FRAMES_LOWER,
@@ -500,11 +500,11 @@ function reactToUserInput() {
         var newCell;
 
         // Determine new location if there is one...
-        if(up && userLocation.y != 0) {
+        if(up && userLocation.y !== 0) {
             newCell = maze[userLocation.y - 1][userLocation.x];
             directionMoved = TOP;
         }
-        else if(down && userLocation.y != cols - 1) {
+        else if(down && userLocation.y !== cols - 1) {
             newCell = maze[userLocation.y + 1][userLocation.x];
             directionMoved = BOTTOM;
         }
@@ -568,7 +568,7 @@ function reactToUserInput() {
                 }
 
                 // Update yarn
-                if(yarn != 0) {
+                if(yarn !== 0) {
                     yarn--;
                     if(yarn === 0)
                         setMessage("I've run out of thread...");
@@ -618,8 +618,8 @@ function remakeMaze(method) {
     rows = mazeDimension;
 
     // Limit numbers to odd values
-    if(cols % 2 == 0) cols++;
-    if(rows % 2 == 0) rows++;
+    if(cols % 2 === 0) cols++;
+    if(rows % 2 === 0) rows++;
 
     // Generate maze and update the canvas...
     updateCanvasSize(false);

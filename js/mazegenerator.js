@@ -21,11 +21,11 @@ function generateMazeKruskal(m, cols, rows) {
     // Place initial grid and fill edges array
     for(var row=0; row<rows; row++) {
         for(var col=0; col<cols; col++) {
-            var rowMod = (row % 2 == 0);
-            var colMod = (col % 2 == 0);
+            var rowMod = (row % 2 === 0);
+            var colMod = (col % 2 === 0);
             if(rowMod || colMod) {
                 m[row][col].convertToObstacle();
-                if (rowMod != colMod) edges.push(m[row][col]);
+                if (rowMod !== colMod) edges.push(m[row][col]);
             }
             else {
                 var c = [];
@@ -103,7 +103,7 @@ function generateMazeRecursiveBacktracking(m, cols, rows) {
     // Place initial grid
     for(var row=0; row<rows; row++) {
         for(var col=0; col<cols; col++) {
-            if(row % 2 == 0 || col % 2 == 0)
+            if(row % 2 === 0 || col % 2 === 0)
                 m[row][col].convertToObstacle();
             else
                 m[row][col].visited = false;

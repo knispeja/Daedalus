@@ -101,7 +101,7 @@ function updateProgressText() {
 }
 
 function displayRandomQuestion() {
-    if(questionsLeft == 0) {
+    if(questionsLeft === 0) {
         skipToGame();
     }
 
@@ -121,7 +121,7 @@ function toggleNextBtnExplanationShown() {
         nextBtn.style.display = explanationDiv.style.display = HIDE;
     else {
         nextBtn.style.display = explanationDiv.style.display = SHOW;
-        if(questionsLeft == 0) nextBtn.innerText = "Finish";
+        if(questionsLeft === 0) nextBtn.innerText = "Finish";
     }
 
     nextplanationShown = !nextplanationShown;
