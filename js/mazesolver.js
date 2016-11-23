@@ -62,6 +62,7 @@ function solveMazeWithAStar(startCell, endCell, displayResult) {
         // End case: found the objective cell
         if(currentCell.equals(endCell)) {
             var optimalPath = 0; // reset optimal path before calculating
+            startCell.inSolution = true;
             while(currentCell.parent) {
                 currentCell.inSolution = true;
                 optimalPath++;

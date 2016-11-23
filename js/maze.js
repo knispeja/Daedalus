@@ -546,6 +546,13 @@ function reactToUserInput() {
 
             needsRedraw = true;
 
+            if (oldCell.inSolution && newCell.inSolution) {
+                oldCell.inSolution = false;
+            } else {
+                oldCell.inSolution = true;
+            }
+            newCell.inSolution = true;
+
             if (newCell.containsMinotaur) {
                 minotaurIsKilled = true;
                 newCell.containsMinotaur = false;
