@@ -4,6 +4,23 @@ const MULTIPLE_CHOICE_START_CODE = 65; // capital a:'A'
 const TOTAL_QUESTIONS_ASKED = 10;
 const CORRECT_OPTION_COLOR = '#006400';
 const INCORRECT_OPTION_COLOR = '#7F0000';
+const GENERATING_SYNONYMS = [
+    "Generating",
+    "Developing",
+    "Constructing",
+    "Building",
+    "Erecting",
+    "Forging",
+    "Creating",
+    "Designing",
+    "Formulating",
+    "Manufacturing",
+    "Setting up"
+];
+const LABYRINTH_SYNONYMS = [
+    "labyrinth",
+    "maze"
+];
 const INSTRUCTIONS = [
     "Welcome to Daedalus' Game!<br>Click to continue, or press Escape to skip.",
     "This is a game based on Greek and Roman mythology.",
@@ -16,6 +33,7 @@ const INSTRUCTIONS = [
 
 // Globals
 var defaultOptionColor;
+var instructionDivElement;
 var instructionParagraphElement;
 var questionElement;
 var optionElements = [];
@@ -138,12 +156,22 @@ function toggleNextBtnExplanationShown() {
 }
 
 function skipToGame() {
+
+    instructionDivElement.style.display = "table";
+    instructionParagraphElement.innerHTML = 
+        GENERATING_SYNONYMS[randomIndexOf(GENERATING_SYNONYMS)] +
+        " " +
+        LABYRINTH_SYNONYMS[randomIndexOf(LABYRINTH_SYNONYMS)] +
+        "...";
+
     document.getElementById("progress").style.display = HIDE;
     document.getElementById("container").style.display = HIDE;
     document.getElementById("navcontainer").style.display = HIDE;
 
-    beginMazeNav(1 - (numberCorrect*1.0/(TOTAL_QUESTIONS_ASKED)));
-    return;
+    setTimeout(function() {
+        beginMazeNav(1 - (numberCorrect*1.0/(TOTAL_QUESTIONS_ASKED)));
+        instructionDivElement.style.display = HIDE;
+    }, 0);
 }
 
 function selectedAnswer() {
@@ -168,7 +196,7 @@ function selectedAnswer() {
 }
 
 function exitInstructions() {
-    document.getElementById("instructDiv").style.display = HIDE;
+    instructionDivElement.style.display = HIDE;
     window.removeEventListener("keydown", instructionCloser, false);
 }
 
@@ -192,7 +220,7 @@ function addActionListeners() {
 
     window.addEventListener("keydown", instructionCloser, false);
 
-    document.getElementById("instructDiv").onclick = function(){
+    instructionDivElement.onclick = function(){
         instructionParagraphElement.classList.toggle("fade");
         setTimeout(nextInstruction, 500); // Time should be similar to the CSS fade transition time
     }
@@ -210,6 +238,7 @@ function init() {
 
     mazeGenInit();
 
+    instructionDivElement = document.getElementById("instructDiv")
     instructionParagraphElement = document.getElementById("instructP");
     instructionParagraphElement.innerHTML = INSTRUCTIONS.shift();
 
