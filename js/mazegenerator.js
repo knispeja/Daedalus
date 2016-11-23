@@ -7,10 +7,26 @@ const KRUSKAL = 1;
 const RECURSIVE_BACKTRACKING = 2;
 
 // Directional enums
-const TOP = 4;
-const RIGHT = 3;
+// NOTE: Although an enum, the order is important as it defines the tileset orientation.
+//       For example, the Theseus tileset faces down, then left, then right, then up.
 const BOTTOM = 1;
 const LEFT = 2;
+const RIGHT = 3;
+const TOP = 4;
+
+// Function to get the opposite directional enum
+function oppositeSide(side) {
+    switch(side) {
+        case TOP:
+            return BOTTOM;
+        case BOTTOM:
+            return TOP;
+        case RIGHT:
+            return LEFT;
+        case LEFT:
+            return RIGHT;
+    }
+}
 
 // Cell type enums
 const OBSTACLE_CELL = "obstacle";
@@ -47,7 +63,7 @@ const TILESET_TILE_SIZE = 32; // in px
 const NUM_WALL_OPTIONS = 3;
 const NUM_FLOOR_OPTIONS = 1;
 
-// Yarn container stuff
+// Yarn container stuff -- YarnContainer simplifies yarn drawing
 function YarnContainer(numOptions, path) {
     this.numOptions = numOptions;
     this.path = path;
@@ -61,45 +77,56 @@ var yarnRightToBot = new YarnContainer(2, yarnPath + 'rightToBot/');
 var yarnBotToLeft = new YarnContainer(2, yarnPath + 'botToLeft/');
 var yarnLeftToTop = new YarnContainer(2, yarnPath + 'leftToTop/');
 
+// Global canvas and context
 var canvas;
 var ctx;
 
-// user input directions
+// User input directionals
 var up;
 var down;
 var left;
 var right;
 
+// Important maze globals
 var maze = [];
+var cols;
+var rows;
+var originalLocation = {x:0, y:0};
+var objectiveCell;
+
+// User-related variables
 var userLocation = {x:0, y:0};
 var userDrawnLocation = {x:0, y:0};
 var directionMoved = BOTTOM;
-var originalLocation = {x:0, y:0};
-var objectiveCell;
-var cols;
-var rows;
 
+// Drawing-related
+var maxQuality = true; // same as "notHighPerformanceMode" (toggle via ESC)
+var mazeDimension; // height/width of the maze in cells
 var frameRadiusX;
 var frameRadiusY;
 var trueFrameRadiusX;
 var trueFrameRadiusY;
+var interpOffset = {x:0, y:0, mag:0}; // used in interpolation
+var interpolationAdj = 0; // adjusts interpolation increment for higher performance
+var lastYarnIndex = 0; // helps prevent repetitive yarn images
+var theseusAnimationTick = 0; // ticks up every frame
+var theseusAnimationFrame = 0; // animation frame Theseus is on -- changed by theseusAnimationTick
 
+// Torch stuff
 var torchFlickerFrames = TORCH_FLICKER_FRAMES_LOWER;
 var torchFlickerCounter = 0;
 var innerTorchRadius = 0;
 var torchRadius = 0;
 
-var stepsTaken = 0;
-var stepsToMinotaur = 0;
+// Gameplay-related
+var stepsTaken = 0; // steps the user has taken, total
+var stepsToMinotaur = 0; // steps away the Minotaur was at the start
+var originalYarn = 0; // original amount of yarn the user was given (used in big yarn drawing)
+var yarn = 0; // amount of squares of yarn the user has left
+var seenMinotaur = false;
+var minotaurIsKilled = false;
 
-var interpOffset = {x:0, y:0, mag:0};
-
-var lastYarnIndex = 0;
-var originalYarn = 0;
-var yarn = 0;
-var maxQuality = true;
-var interpolationAdj = 0;
-
+// Images used frequently for various tiles
 var wallTileImage;
 var floorTileImage;
 var yarnImage;
@@ -108,27 +135,6 @@ var closedDoorImage;
 var minotaurImage;
 var minotaurEyesImage;
 var theseusTilesetImage;
-
-var theseusAnimationTick = 0;
-var theseusAnimationFrame = 0;
-
-var mazeDimension;
-
-var seenMinotaur = false;
-var minotaurIsKilled = false;
-
-function oppositeSide(side) {
-    switch(side) {
-        case TOP:
-            return BOTTOM;
-        case BOTTOM:
-            return TOP;
-        case RIGHT:
-            return LEFT;
-        case LEFT:
-            return RIGHT;
-    }
-}
 
 function decideTileset() {
 
