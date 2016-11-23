@@ -628,14 +628,6 @@ function remakeMaze(method) {
     stepsToMinotaur = solveMaze(false);
 }
 
-function hideCanvas() {
-    canvas.style.display="none";
-}
-
-function showCanvas() {
-    canvas.style.display="block";
-}
-
 function beginMazeNav(difficulty) {
 
     // Decide maze dimensions
@@ -655,7 +647,7 @@ function beginMazeNav(difficulty) {
 
     // Canvas stuff
     document.body.style.backgroundColor = "black";
-    showCanvas();
+    canvas.style.display = SHOW;
 
     // Finalize and start the game
     setMessage("The Minotaur is but " + stepsToMinotaur + " steps away.");
@@ -726,8 +718,8 @@ function addEventListeners() {
 // Runs on load
 function mazeGenInit() {
     canvas = document.getElementById("canvas");
+    canvas.style.display = HIDE;
+
     ctx = canvas.getContext("2d");
     imageInit();
 }
-
-window.onload = mazeGenInit;

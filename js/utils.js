@@ -1,3 +1,8 @@
+// Constants useful across modules
+var SHOW = "block";
+var HIDE = "none";
+
+// Gets a random integer from 0 to the given value, exclusive
 function randomIntFromZero(value) {
     return Math.floor(Math.random() * value);
 }
@@ -22,13 +27,4 @@ function shuffleArray(arr) {
         indices.splice(indexIndex, 1);
     }
     return shuffled;
-}
-
-// Checks if the given address exists
-function urlExists(url)
-{
-    var http = new XMLHttpRequest();
-    http.open('HEAD', url, false);
-    http.send();
-    return http.status!=404;
 }

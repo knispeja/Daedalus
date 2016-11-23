@@ -1,7 +1,4 @@
 // Constants
-var SHOW = "block";
-var HIDE = "none";
-var TRUE_FALSE_OPTIONS = ['True', 'False'];
 var MULTIPLE_CHOICE_START_CODE = 65; // capital a:'A'
 var TOTAL_QUESTIONS_ASKED = 10;
 var CORRECT_OPTION_COLOR = '#006400';
@@ -50,7 +47,7 @@ var Question = function(text, options, answer, explanation) {
 function makeTrueFalseQuestion(question, answer, explanation="") {
     return new Question(
         question,
-        TRUE_FALSE_OPTIONS,
+        ['True', 'False'],
         answer,
         explanation
     );
@@ -168,8 +165,8 @@ function addActionListeners() {
 }
 
 function init() {
+
     mazeGenInit();
-    hideCanvas();
 
     questionElement = document.getElementById("question");
 
