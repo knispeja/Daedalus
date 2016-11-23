@@ -33,7 +33,7 @@ const OBJECTIVE_CELL = "objective";
 const KRUSKAL_MIN_THRESHOLD = 0.4;
 const MAZE_DIMENSION_MAX = 125; // in cells
 const MAZE_DIMENSION_MIN_PERCENT = 0.20;
-const TIME_TO_SHOW_SOLUTION = 20000; // in ms
+const TIME_TO_SHOW_SOLUTION = 14000; // in ms
 const YARN_TRADE_PERCENT_OF_ORIGINAL = 0.2;
 
 // Quality of life and rendering constants
@@ -49,8 +49,9 @@ const TORCH_RADIUS_LOWER = 0.55;
 const TORCH_RADIUS_UPPER = 0.80;
 const TORCH_FLICKER_FRAMES_LOWER = 9;
 const TORCH_FLICKER_FRAMES_UPPER = 19;
-const INNER_TORCH_MULTIPLIER = 1/10.0;
-const OUTER_TORCH_MULTIPLIER = 1/2.2;
+const INNER_TORCH_MULTIPLIER = 0.1;
+const OUTER_TORCH_MULTIPLIER = 0.45;
+const OUTER_TORCH_MULTIPLIER_HINT = 0.5;
 
 // Theseus animation constants
 const THESEUS_ANIMATION_TICKS_PER_FRAME = CELL_LENGTH/4;
@@ -433,10 +434,10 @@ function drawLightingEffects() {
     gradient = ctx.createRadialGradient(
         gradX,
         gradY,
-        canvas.height*INNER_TORCH_MULTIPLIER,
+        canvas.height * INNER_TORCH_MULTIPLIER,
         gradX,
         gradY,
-        canvas.height*OUTER_TORCH_MULTIPLIER
+        canvas.height * (showSolution ? OUTER_TORCH_MULTIPLIER_HINT : OUTER_TORCH_MULTIPLIER)
     );
     gradient.addColorStop(0, "rgba(248, 195, 119, 0.25)");
 
@@ -743,9 +744,13 @@ function tradeYarn() {
     else if (showSolution)
         setMessage("The path is already revealed. For now, at least...");
     else {
+        setMessage("The solution is revealed! I must make haste.");
         yarn -= yarnTradeAmount;
         showSolution = true;
-        setTimeout(function() {showSolution = false;}, TIME_TO_SHOW_SOLUTION);
+        setTimeout(function() {
+            showSolution = false;
+            setMessage("That was short-lived.");
+        }, TIME_TO_SHOW_SOLUTION);
     }
 }
 
