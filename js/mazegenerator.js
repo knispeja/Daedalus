@@ -50,7 +50,7 @@ function YarnContainer(numOptions, path) {
     this.images = [];
 }
 var yarnPath = 'resources/yarn/';
-var yarnVertical = new YarnContainer(3, yarnPath + 'vertical/');
+var yarnVertical = new YarnContainer(4, yarnPath + 'vertical/');
 var yarnHorizontal = new YarnContainer(4, yarnPath + 'horizontal/');
 var yarnTopToRight = new YarnContainer(2, yarnPath + 'topToRight/');
 var yarnRightToBot = new YarnContainer(2, yarnPath + 'rightToBot/');
