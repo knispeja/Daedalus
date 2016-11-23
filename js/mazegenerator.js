@@ -232,28 +232,29 @@ function Cell(type, x, y, image) {
             userDrawnLocation.y = rectY;
 
         } else {
-            if (specialDraw === MINOTAUR_EYES) {
-                ctx.drawImage(
-                    minotaurEyesImage,
-                    rectX,
-                    rectY,
-                    CELL_LENGTH,
-                    CELL_LENGTH
-                );
-                return;
-            }
+
+            var drawImage = this.image;
+            if (specialDraw === MINOTAUR_EYES)
+                drawImage = minotaurEyesImage;
 
             // Draw whatever image this tile is represented by
             ctx.drawImage(
-                this.image,
+                drawImage,
                 rectX,
                 rectY,
                 CELL_LENGTH,
                 CELL_LENGTH
             );
 
+            var hasAdditionalContent =
+                specialDraw !== MINOTAUR_EYES && (
+                    this.stringImage ||
+                    this.containsMinotaur ||
+                    this.isObjective()
+                );
+
             // Additional images on top of the drawn tile
-            if (this.stringImage || this.containsMinotaur || this.isObjective()) {
+            if (hasAdditionalContent) {
                 if (this.isObjective())
                     addImg = minotaurIsKilled ? openDoorImage : closedDoorImage;
                 else
@@ -884,8 +885,9 @@ function beginMazeNav(difficulty) {
     // Decide maze dimensions
     var mazeDimPercent = (difficulty < MAZE_DIMENSION_MIN_PERCENT) ? MAZE_DIMENSION_MIN_PERCENT : difficulty;
     mazeDimension = Math.ceil(mazeDimPercent * MAZE_DIMENSION_MAX);
+    mazeDimension = 15;
     
-    // Generate maze
+    // Generate maze, use different method depending on difficulty
     if (difficulty <= KRUSKAL_MIN_THRESHOLD)
         remakeMaze(KRUSKAL);
     else
