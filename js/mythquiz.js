@@ -1,11 +1,21 @@
 // Constants
-var MULTIPLE_CHOICE_START_CODE = 65; // capital a:'A'
-var TOTAL_QUESTIONS_ASKED = 10;
-var CORRECT_OPTION_COLOR = '#006400';
-var INCORRECT_OPTION_COLOR = '#7F0000';
+const MULTIPLE_CHOICE_START_CODE = 65; // capital a:'A'
+const TOTAL_QUESTIONS_ASKED = 10;
+const CORRECT_OPTION_COLOR = '#006400';
+const INCORRECT_OPTION_COLOR = '#7F0000';
+const INSTRUCTIONS = [
+    "Welcome to Daedalus!<br>Click to continue, or press Escape to skip.",
+    "This is a game based on Greek and Roman mythology.",
+    "You will first be presented with a quiz with 10 randomly-selected questions.",
+    "Try to get as many as you can correct!<br>Your score determines the difficulty of the subsequent game.",
+    "In the game after the quiz, you play as Theseus.<br>Your goal is to kill the Minotaur then make it back to the entrance of the labyrinth.",
+    "Ariadne will grant you thread that will help you find your way back to the entrance.",
+    "Are you ready? It's time to take the quiz!"
+];
 
 // Globals
 var defaultOptionColor;
+var instructionParagraphElement;
 var questionElement;
 var optionElements = [];
 var questionsLeft = TOTAL_QUESTIONS_ASKED;
@@ -154,7 +164,36 @@ function selectedAnswer() {
     askingPhase = false;
 }
 
+function exitInstructions() {
+    document.getElementById("instructDiv").style.display = HIDE;
+    window.removeEventListener("keydown", instructionCloser, false);
+}
+
+function nextInstruction() {
+    var message = INSTRUCTIONS.shift();
+    if (message) {
+        instructionParagraphElement.innerHTML = message;
+        instructionParagraphElement.classList.toggle("fade");
+    } else {
+        exitInstructions();
+    }
+}
+
+function instructionCloser(event) {
+    if (event.keyCode === 27) { // escape
+        exitInstructions();
+    }
+}
+
 function addActionListeners() {
+
+    window.addEventListener("keydown", instructionCloser, false);
+
+    document.getElementById("instructDiv").onclick = function(){
+        instructionParagraphElement.classList.toggle("fade");
+        setTimeout(nextInstruction, 500); // Time should be similar to the CSS fade transition time
+    }
+
     document.getElementById("skip").onclick = skipToGame;
     nextBtn.onclick = displayRandomQuestion;
 
@@ -167,6 +206,9 @@ function addActionListeners() {
 function init() {
 
     mazeGenInit();
+
+    instructionParagraphElement = document.getElementById("instructP");
+    instructionParagraphElement.innerHTML = INSTRUCTIONS.shift();
 
     questionElement = document.getElementById("question");
 

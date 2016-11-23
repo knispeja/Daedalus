@@ -81,3 +81,38 @@ html, body {
 .nav:hover {
     cursor: pointer;
 }
+
+#instructDiv {
+
+    z-index: 1;
+
+    position:fixed;
+    padding:0;
+    margin:0;
+
+    top:0;
+    left:0;
+
+    width: 100%;
+    height: 100%;
+    background:#210439;
+
+    text-align: center;
+    display: table;
+}
+#instructDiv > p {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+#instructP {
+    font-size: 24pt;
+    color: white;
+
+    opacity: 1;
+    transition: opacity 0.75s;
+}
+
+#instructP.fade {
+    opacity: 0;
+}
