@@ -11,11 +11,6 @@ const HALF_CELL = CELL_LENGTH / 2.0;
 const KRUSKAL = 1;
 const RECURSIVE_BACKTRACKING = 2;
 
-const USER_COLOR = "red";
-const OBSTACLE_COLOR = "black";
-const EMPTY_COLOR = "white";
-const OBJECTIVE_COLOR = "lime";
-
 const OBSTACLE_CELL = "obstacle";
 const EMPTY_CELL = "empty";
 const OBJECTIVE_CELL = "objective";
@@ -39,6 +34,11 @@ const TILESET_TILE_SIZE = 32; // in px
 const NUM_WALL_OPTIONS = 3;
 const NUM_FLOOR_OPTIONS = 1;
 
+// Special draw constants
+const USER = 1;
+const MINOTAUR_EYES = 2;
+
+// Directional constants
 const TOP = 4;
 const RIGHT = 3;
 const BOTTOM = 1;
@@ -165,11 +165,11 @@ function decideTileset() {
     floorTileImage.src = "resources/floor/" + floorNum + ext;
 }
 
-function Cell(type, x, y, color) {
+function Cell(type, x, y, image) {
     this.type = type;
     this.x = x;
     this.y = y;
-    this.color = color;
+    this.image = image;
     this.neighbors = [];
     this.accessibleNeighbors = [];
 
@@ -186,25 +186,24 @@ function Cell(type, x, y, color) {
 
     this.convertToEmpty = function() {
         this.type = EMPTY_CELL;
-        this.color = EMPTY_COLOR;
+        this.image = floorTileImage;
     }
 
     this.convertToObstacle = function() {
         this.type = OBSTACLE_CELL;
-        this.color = OBSTACLE_COLOR;
+        this.image = wallTileImage;
     }
 
-    this.draw = function(drawColor = this.color, xmod = this.x, ymod = this.y, noOffset = false, eyes = false) {
-        ctx.fillStyle = drawColor;
+    this.drawAt = function(xmod, ymod, specialDraw = false) {
 
         var defMod = CELL_LENGTH;
-        var xOff = noOffset ? 0 : (interpOffset.x * interpOffset.mag);
-        var yOff = noOffset ? 0 : (interpOffset.y * interpOffset.mag);
+        var xOff = (specialDraw === USER) ? 0 : (interpOffset.x * interpOffset.mag);
+        var yOff = (specialDraw === USER) ? 0 : (interpOffset.y * interpOffset.mag);
 
         var rectX = xmod * CELL_LENGTH + xOff - defMod;
         var rectY = ymod * CELL_LENGTH + yOff - defMod;
 
-        if (drawColor == USER_COLOR) {
+        if (specialDraw === USER) {
 
             if (interpOffset.x || interpOffset.y) {
                 if (++theseusAnimationTick > THESEUS_ANIMATION_TICKS_PER_FRAME) {
@@ -231,11 +230,9 @@ function Cell(type, x, y, color) {
             );
             userDrawnLocation.x = rectX;
             userDrawnLocation.y = rectY;
-            return;
-        } else {
-            var drawImg;
 
-            if (eyes) {
+        } else {
+            if (specialDraw === MINOTAUR_EYES) {
                 ctx.drawImage(
                     minotaurEyesImage,
                     rectX,
@@ -246,53 +243,24 @@ function Cell(type, x, y, color) {
                 return;
             }
 
-            if (this.isObstacle()) {
-                drawImg = wallTileImage;
-            } else if (this.isEmpty()) {
-                drawImg = floorTileImage;
-            } else if (this.isObjective()) {
+            // Draw whatever image this tile is represented by
+            ctx.drawImage(
+                this.image,
+                rectX,
+                rectY,
+                CELL_LENGTH,
+                CELL_LENGTH
+            );
+
+            // Additional images on top of the drawn tile
+            if (this.stringImage || this.containsMinotaur || this.isObjective()) {
+                if (this.isObjective())
+                    addImg = minotaurIsKilled ? openDoorImage : closedDoorImage;
+                else
+                    addImg = this.containsMinotaur ? minotaurImage : this.stringImage;
 
                 ctx.drawImage(
-                    wallTileImage,
-                    rectX,
-                    rectY,
-                    CELL_LENGTH,
-                    CELL_LENGTH
-                );
-
-                drawImg = minotaurIsKilled ? openDoorImage : closedDoorImage;
-            }
-
-            if (drawImg) {
-                ctx.drawImage(
-                    drawImg,
-                    rectX,
-                    rectY,
-                    CELL_LENGTH,
-                    CELL_LENGTH
-                );
-            } else {
-                ctx.fillRect(
-                    rectX,
-                    rectY,
-                    CELL_LENGTH,
-                    CELL_LENGTH
-                );
-            }
-
-            if (this.stringImage) {
-                ctx.drawImage(
-                    this.stringImage,
-                    rectX,
-                    rectY,
-                    CELL_LENGTH,
-                    CELL_LENGTH
-                );
-            }
-
-            if (this.containsMinotaur ) {
-                ctx.drawImage(
-                    minotaurImage,
+                    addImg,
                     rectX,
                     rectY,
                     CELL_LENGTH,
@@ -301,14 +269,10 @@ function Cell(type, x, y, color) {
             }
         }
     }
-
-    this.drawAt = function(x, y, drawColor = this.color, noOffset = false, eyes = false) {
-        this.draw(drawColor, x, y, noOffset, eyes);
-    }
 }
 
-function makeObjectiveCell(x, y) {return new Cell(OBJECTIVE_CELL, x, y, OBJECTIVE_COLOR);}
-function makeEmptyCell(x, y) {return new Cell(EMPTY_CELL, x, y, EMPTY_COLOR);}
+function makeObjectiveCell(x, y) {return new Cell(OBJECTIVE_CELL, x, y, wallTileImage);}
+function makeEmptyCell(x, y) {return new Cell(EMPTY_CELL, x, y, floorTileImage);}
 
 function getCellAtUserLocation() {
     return maze[userLocation.y][userLocation.x];
@@ -581,7 +545,7 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
             cell.drawAt(x, y);
         }
     }
-    if(userDraw) userDraw.cell.drawAt(userDraw.x, userDraw.y, USER_COLOR, true);
+    if(userDraw) userDraw.cell.drawAt(userDraw.x, userDraw.y, USER);
     if(minotaurDraw) {
         minotaurDraw.cell.drawAt(minotaurDraw.x, minotaurDraw.y);
         if(!seenMinotaur) {
@@ -597,9 +561,7 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
         objectiveCell.drawAt(
             objectiveCell.x - userLocation.x + frameRadiusX,
             objectiveCell.y - userLocation.y + frameRadiusY,
-            objectiveCell.color,
-            false,
-            true
+            MINOTAUR_EYES
         );
 
     drawYarn();
