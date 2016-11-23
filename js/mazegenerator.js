@@ -69,6 +69,7 @@ var right;
 var maze = [];
 var userLocation = {x:0, y:0};
 var userDrawnLocation = {x:0, y:0};
+var directionMoved = BOTTOM;
 var originalLocation = {x:0, y:0};
 var objectiveCell;
 var cols;
@@ -213,7 +214,7 @@ function Cell(type, x, y, color) {
             }
 
             var clipX = theseusAnimationFrame * TILESET_TILE_SIZE;
-            var clipY = 0;
+            var clipY = (directionMoved - 1) * TILESET_TILE_SIZE;
 
             ctx.drawImage(
                 theseusTilesetImage,
@@ -706,7 +707,6 @@ function reactToUserInput() {
         var newCell;
 
         // Determine new location if there is one...
-        var directionMoved = false;
         if(up && userLocation.y != 0) {
             newCell = maze[userLocation.y - 1][userLocation.x];
             directionMoved = TOP;
