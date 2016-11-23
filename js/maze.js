@@ -29,10 +29,12 @@ const OBSTACLE_CELL = "obstacle";
 const EMPTY_CELL = "empty";
 const OBJECTIVE_CELL = "objective";
 
-// Difficulty-related constants
+// Difficulty and gameplay-related constants
 const KRUSKAL_MIN_THRESHOLD = 0.4;
 const MAZE_DIMENSION_MAX = 125; // in cells
 const MAZE_DIMENSION_MIN_PERCENT = 0.20;
+const TIME_TO_SHOW_SOLUTION = 20000; // in ms
+const YARN_TRADE_PERCENT_OF_ORIGINAL = 0.2;
 
 // Quality of life and rendering constants
 const MESSAGE_DURATION = 6500; // in ms
@@ -121,6 +123,7 @@ var stepsTaken = 0; // steps the user has taken, total
 var stepsToMinotaur = 0; // steps away the Minotaur was at the start
 var originalYarn = 0; // original amount of yarn the user was given (used in big yarn drawing)
 var yarn = 0; // amount of squares of yarn the user has left
+var yarnTradeAmount = 0;
 var seenMinotaur = false;
 var minotaurIsKilled = false;
 var showSolution = false;
@@ -501,7 +504,6 @@ function isTraversable(cell) {
     return !(!cell || cell.isObstacle() || (cell.isObjective() && !minotaurIsKilled));
 }
 
-// Runs every USER_INPUT_WAIT_MS, so needs to be fast
 function reactToUserInput() {
 
     // Ignore conflicting input
@@ -660,6 +662,10 @@ function beginMazeNav(difficulty) {
     yarn = Math.floor(yarnMultiplier * stepsToMinotaur);
     originalYarn = yarn;
 
+    // Decide yarn trade-in rate and set button text
+    yarnTradeAmount = Math.floor(originalYarn * YARN_TRADE_PERCENT_OF_ORIGINAL);
+    tradeBtn.innerHTML = "Trade " + yarnTradeAmount + " yarn for a hint";
+
     // Canvas stuff
     document.body.style.backgroundColor = "black";
     canvas.style.display = SHOW;
@@ -725,7 +731,15 @@ function onKeyUp(event) {
 }
 
 function tradeYarn() {
-    alert("TODO");
+    if (yarn < yarnTradeAmount)
+        setMessage("I don't have enough yarn.");
+    else if (showSolution)
+        setMessage("The path is already revealed. For now, at least...");
+    else {
+        yarn -= yarnTradeAmount;
+        showSolution = true;
+        setTimeout(function() {showSolution = false;}, TIME_TO_SHOW_SOLUTION);
+    }
 }
 
 function onTradeHover() {
