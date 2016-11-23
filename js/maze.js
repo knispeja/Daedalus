@@ -121,10 +121,12 @@ var originalYarn = 0; // original amount of yarn the user was given (used in big
 var yarn = 0; // amount of squares of yarn the user has left
 var seenMinotaur = false;
 var minotaurIsKilled = false;
+var showSolution = false;
 
 // Images used frequently for various tiles
 var wallTileImage;
 var floorTileImage;
+var floorTileHighlightImage;
 var yarnImage;
 var openDoorImage;
 var closedDoorImage;
@@ -139,6 +141,7 @@ function Cell(type, x, y, image) {
     this.image = image;
     this.neighbors = [];
     this.accessibleNeighbors = [];
+    this.inSolution = false;
 
     this.lastEnteredFrom = undefined;
     this.stringImage = undefined;
@@ -171,7 +174,6 @@ function Cell(type, x, y, image) {
         var rectY = ymod * CELL_LENGTH + yOff - defMod;
 
         if (specialDraw === USER) {
-
             if (interpOffset.x || interpOffset.y) {
                 if (++theseusAnimationTick > THESEUS_ANIMATION_TICKS_PER_FRAME) {
                     if (++theseusAnimationFrame === THESUES_ANIMATION_FRAMES) {
@@ -199,10 +201,11 @@ function Cell(type, x, y, image) {
             userDrawnLocation.y = rectY;
 
         } else {
-
             var drawImage = this.image;
             if (specialDraw === MINOTAUR_EYES)
                 drawImage = minotaurEyesImage;
+            else if (showSolution && this.inSolution)
+                drawImage = floorTileHighlightImage;
 
             // Draw whatever image this tile is represented by
             ctx.drawImage(
@@ -296,15 +299,17 @@ function imageInit() {
     minotaurEyesImage = new Image();
     minotaurEyesImage.src = "resources/minotaur/minotaur_eyes.png"
 
-    // Obstacle cell image
-    wallTileImage = new Image();    
+    // Obstacle cell image  
     var wallNum = randomIntFromZero(NUM_WALL_OPTIONS) + 1;
+    wallTileImage = new Image();  
     wallTileImage.src = "resources/wall/" + wallNum + ".jpg";
     
     // Floor (empty) cell image
-    floorTileImage = new Image();
     var floorNum = randomIntFromZero(NUM_FLOOR_OPTIONS) + 1;
+    floorTileImage = new Image();
     floorTileImage.src = "resources/floor/" + floorNum + ".jpg";
+    floorTileHighlightImage = new Image();
+    floorTileHighlightImage.src = "resources/floor/" + floorNum + "_highlight.jpg";
 }
 
 // Choose an appropriate yarn image from the container

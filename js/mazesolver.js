@@ -63,9 +63,7 @@ function solveMazeWithAStar(startCell, endCell, displayResult) {
         if(currentCell.equals(endCell)) {
             var optimalPath = 0; // reset optimal path before calculating
             while(currentCell.parent) {
-                if(displayResult) {
-                    currentCell.draw("yellow");
-                }
+                currentCell.inSolution = true;
                 optimalPath++;
                 var temp = currentCell.parent;
                 currentCell.parent = null;

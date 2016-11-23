@@ -26,7 +26,8 @@ const INSTRUCTIONS = [
     "This is a game based on Greek and Roman mythology.",
     "You will first be presented with a quiz with 10 randomly-selected questions.",
     "Try to get as many as you can correct!<br>Your score determines the difficulty of the subsequent game.",
-    "In the game after the quiz, you play as Theseus.<br>Your goal is to kill the Minotaur then make it back to the entrance of the labyrinth.",
+    "You can skip straight to the game, but beware!<br>Any unanswered questions will be marked incorrect.",
+    "In said game, you play as Theseus.<br>Your goal is to kill the Minotaur then make it back to the entrance of the labyrinth.",
     "Ariadne will grant you thread that will help you find your way back to the entrance.",
     "Are you ready? It's time to take the quiz!"
 ];
@@ -211,9 +212,7 @@ function nextInstruction() {
 }
 
 function instructionCloser(event) {
-    if (event.keyCode === 27) { // escape
-        exitInstructions();
-    }
+    if (event.keyCode === 27) exitInstructions();
 }
 
 function addActionListeners() {
