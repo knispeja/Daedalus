@@ -5,7 +5,7 @@ const MAZE_DIMENSION_MIN_PERCENT = 0.24;
 
 const KRUSKAL_MIN_THRESHOLD = 0.4;
 
-const CELL_LENGTH = 65.0; // in px
+const CELL_LENGTH = 64.0; // in px
 const HALF_CELL = CELL_LENGTH / 2.0;
 
 const KRUSKAL = 1;
@@ -20,7 +20,7 @@ const OBSTACLE_CELL = "obstacle";
 const EMPTY_CELL = "empty";
 const OBJECTIVE_CELL = "objective";
 
-const INTERPOLATION_INCREMENT = 2; // in px
+const INTERPOLATION_INCREMENT = 2; // in px, 1 is perfect rendering
 
 const TORCH_INNER_RADIUS_LOWER = 0.40;
 const TORCH_INNER_RADIUS_UPPER = 0.45;
@@ -93,6 +93,7 @@ var interpOffset = {x:0, y:0, mag:0};
 var originalYarn = 0;
 var yarn = 0;
 var maxQuality = true;
+var interpolationAdj = 0;
 
 var wallTileImage;
 var floorTileImage;
@@ -539,7 +540,7 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
     }
 
     if(interpolate) {
-        interpOffset.mag -= INTERPOLATION_INCREMENT;
+        interpOffset.mag -= (INTERPOLATION_INCREMENT + interpolationAdj);
         if (interpOffset.mag < 0) {
             interpOffset.mag = 0;
         }
@@ -564,9 +565,6 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
             var isUser = false;
             if (userLocation.x == col && userLocation.y == row) {
                isUser = true;
-            }
-            if (!maxQuality && cell.isEmpty() && !isUser) {
-                continue;
             }
 
             var x = (col - userLocation.x) + frameRadiusX;
@@ -631,28 +629,26 @@ function drawLightingEffects() {
     );
     gradient.addColorStop(0, "rgba(248, 195, 119, 0.25)");
 
-    if (maxQuality) {
-        if (++torchFlickerCounter == torchFlickerFrames) {
+    if (++torchFlickerCounter == torchFlickerFrames) {
 
-            torchFlickerFrames = Math.floor(randRange(
-                TORCH_FLICKER_FRAMES_LOWER,
-                TORCH_FLICKER_FRAMES_UPPER
-            ));
+        torchFlickerFrames = Math.floor(randRange(
+            TORCH_FLICKER_FRAMES_LOWER,
+            TORCH_FLICKER_FRAMES_UPPER
+        ));
 
-            torchFlickerCounter = 0;
-            innerTorchRadius = randRange(
-                TORCH_INNER_RADIUS_LOWER,
-                TORCH_INNER_RADIUS_UPPER
-            ).toFixed(2);
-            torchRadius = randRange(
-                TORCH_RADIUS_LOWER,
-                TORCH_RADIUS_UPPER
-            ).toFixed(2);
-        }
-
-        gradient.addColorStop(0.5, "rgba(118, 75, 9, " + innerTorchRadius + ")");
-        gradient.addColorStop(0.80, "rgba(18, 0, 0, " + torchRadius + ")");
+        torchFlickerCounter = 0;
+        innerTorchRadius = randRange(
+            TORCH_INNER_RADIUS_LOWER,
+            TORCH_INNER_RADIUS_UPPER
+        ).toFixed(2);
+        torchRadius = randRange(
+            TORCH_RADIUS_LOWER,
+            TORCH_RADIUS_UPPER
+        ).toFixed(2);
     }
+
+    gradient.addColorStop(0.5, "rgba(118, 75, 9, " + innerTorchRadius + ")");
+    gradient.addColorStop(0.80, "rgba(18, 0, 0, " + torchRadius + ")");
 
     gradient.addColorStop(1, "rgba(0, 0, 0, 1.00)");
     ctx.fillStyle = gradient;
@@ -847,6 +843,11 @@ function onKeyDown(event) {
     switch(keyCode) {
         case 27:  //escape
             maxQuality = !maxQuality;
+            interpolationAdj = maxQuality ? 0 : 1;
+            setMessage(maxQuality ?
+                "High performance mode disabled." :
+                "High performance mode enabled."
+            );
             break;
         case 38:  //up arrow
         case 87:  //w
