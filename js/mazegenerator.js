@@ -178,7 +178,7 @@ function generateMaze(method, cols, rows) {
         if(newMaze[1][col].isEmpty()) {
             userLocation = {x: col, y: 1};
             newMaze[1][col].lastEnteredFrom = TOP;
-            newMaze[0][col] = makeObjectiveCell(cols-1, row);
+            newMaze[0][col].convertToObjective();
             break;
         }
     }

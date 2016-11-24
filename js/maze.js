@@ -39,8 +39,9 @@ const OBJECTIVE_CELL = "objective";
 const KRUSKAL_MIN_THRESHOLD = 0.4;
 const MAZE_DIMENSION_MAX = 120; // in cells
 const MAZE_DIMENSION_MIN_PERCENT = 0.20;
-const TIME_TO_SHOW_SOLUTION = 14000; // in ms
+const TIME_TO_SHOW_SOLUTION = 10000; // in ms
 const YARN_TRADE_PERCENT_OF_ORIGINAL = 0.4;
+const TIME_BEFORE_OFFERING_HINT = 25000; // in ms
 
 // Quality of life and rendering constants
 const MESSAGE_DURATION = 6500; // in ms
@@ -176,6 +177,11 @@ function Cell(type, x, y, image) {
         this.image = wallTileImage;
     }
 
+    this.convertToObjective = function() {
+        this.type = OBJECTIVE_CELL;
+        this.image = wallTileImage;
+    }
+
     this.drawAt = function(xmod, ymod, specialDraw = NONE) {
 
         var defMod = CELL_LENGTH;
@@ -212,45 +218,46 @@ function Cell(type, x, y, image) {
             userDrawnLocation.x = rectX;
             userDrawnLocation.y = rectY;
 
-        } else {
-            var drawImage = this.image;
-            if (specialDraw === MINOTAUR_EYES)
-                drawImage = minotaurEyesImage;
-            else if (specialDraw === TILE_HIGHLIGHT)
-                drawImage = floorTileHighlightImage;
+            return;
+        }
 
-            // Draw whatever image this tile is represented by
+        var drawImage = this.image;
+        if (specialDraw === MINOTAUR_EYES)
+            drawImage = minotaurEyesImage;
+        else if (specialDraw === TILE_HIGHLIGHT)
+            drawImage = floorTileHighlightImage;
+
+        // Draw whatever image this tile is represented by
+        ctx.drawImage(
+            drawImage,
+            rectX,
+            rectY,
+            CELL_LENGTH,
+            CELL_LENGTH
+        );
+
+        // Return if this is a special case
+        if (specialDraw) return;
+
+        // Additional images on top of drawn tile
+        var hasAdditionalContent =
+                (this.stringImage ||
+                this.containsMinotaur ||
+                this.isObjective());
+
+        if (hasAdditionalContent) {
+            if (this.isObjective())
+                addImg = minotaurIsKilled ? openDoorImage : closedDoorImage;
+            else
+                addImg = this.containsMinotaur ? minotaurImage : this.stringImage;
+
             ctx.drawImage(
-                drawImage,
+                addImg,
                 rectX,
                 rectY,
                 CELL_LENGTH,
                 CELL_LENGTH
             );
-
-            // Return if this is a special case
-            if (specialDraw) return;
-
-            // Additional images on top of drawn tile
-            var hasAdditionalContent =
-                    this.stringImage ||
-                    this.containsMinotaur ||
-                    this.isObjective();
-
-            if (hasAdditionalContent) {
-                if (this.isObjective())
-                    addImg = minotaurIsKilled ? openDoorImage : closedDoorImage;
-                else
-                    addImg = this.containsMinotaur ? minotaurImage : this.stringImage;
-
-                ctx.drawImage(
-                    addImg,
-                    rectX,
-                    rectY,
-                    CELL_LENGTH,
-                    CELL_LENGTH
-                );
-            }
         }
     }
 }
@@ -385,7 +392,6 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
 
     var solutionDraw = [];
     var userDraw;
-    var minotaurDraw;
     for(var row=(showSolution ? trueRowStart : rowStart); row<=(showSolution ? trueRowEnd : rowEnd); row++) {
         for(var col=(showSolution ? trueColStart : colStart); col<=(showSolution ? trueColEnd : colEnd); col++) {
 
@@ -398,18 +404,12 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
             }
 
             if (userLocation.x === col && userLocation.y === row) userDraw = cell;
-            if (cell.containsMinotaur) minotaurDraw = cell;
+            if (!seenMinotaur && cell.containsMinotaur) {
+                setMessage("I can hear something breathing...");
+                seenMinotaur = true;
+            }
 
             drawCellRelativeToUser(cell);
-        }
-    }
-
-    // Draw the minotaur
-    if (minotaurDraw) {
-        drawCellRelativeToUser(minotaurDraw);
-        if(!seenMinotaur) {
-            setMessage("I can hear something breathing...");
-            seenMinotaur = true;
         }
     }
 
@@ -427,12 +427,7 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
     if (userDraw) drawCellRelativeToUser(userDraw, USER);
 
     // Draw minotaur eyes through the darkness
-    if (!minotaurIsKilled)
-        objectiveCell.drawAt(
-            objectiveCell.x - userLocation.x + frameRadiusX,
-            objectiveCell.y - userLocation.y + frameRadiusY,
-            MINOTAUR_EYES
-        );
+    if (!minotaurIsKilled) drawCellRelativeToUser(objectiveCell, MINOTAUR_EYES);
 
     // Draw yarn graphic off to the left
     drawYarn();
@@ -587,6 +582,7 @@ function reactToUserInput() {
             if (newCell.containsMinotaur) {
                 minotaurIsKilled = true;
                 showSolution = false;
+                tradeBtn.style.display = HIDE;
                 newCell.containsMinotaur = false;
                 setMessage("I've slain the Minotaur in just " + stepsTaken + " steps. Time to find my way out.");
             }
@@ -689,7 +685,6 @@ function beginMazeNav(difficulty) {
     // Decide maze dimensions
     var mazeDimPercent = (difficulty < MAZE_DIMENSION_MIN_PERCENT) ? MAZE_DIMENSION_MIN_PERCENT : difficulty;
     mazeDimension = Math.ceil(mazeDimPercent * MAZE_DIMENSION_MAX);
-    mazeDimension = 18;
     
     // Generate maze, use different method depending on difficulty
     if (difficulty <= KRUSKAL_MIN_THRESHOLD)
@@ -709,6 +704,10 @@ function beginMazeNav(difficulty) {
     // Canvas stuff
     document.body.style.backgroundColor = "black";
     canvas.style.display = SHOW;
+
+    // Offer hint eventually
+    tradeBtn.style.display = HIDE;
+    setTimeout(function() {tradeBtn.style.display = SHOW}, TIME_BEFORE_OFFERING_HINT);
 
     // Finalize and start the game
     setMessage("The Minotaur is but " + stepsToMinotaur + " steps away.");
