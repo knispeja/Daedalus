@@ -782,9 +782,13 @@ function tradeYarn() {
         setMessage("The solution is revealed! I must make haste.");
         yarn -= yarnTradeAmount;
         showSolution = true;
+        tradeBtn.style.display = HIDE;
         setTimeout(function() {
             showSolution = false;
-            if (!minotaurIsKilled) setMessage("That was short-lived.");
+            if (!minotaurIsKilled) {
+                setMessage("That was short-lived.");
+                tradeBtn.style.display = SHOW;
+            }
         }, TIME_TO_SHOW_SOLUTION);
     }
 }
