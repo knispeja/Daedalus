@@ -141,6 +141,7 @@ var wallTileImage;
 var floorTileImage;
 var floorTileHighlightImage;
 var yarnImage;
+var yarnLossImage;
 var openDoorImage;
 var closedDoorImage;
 var minotaurImage;
@@ -312,6 +313,8 @@ function imageInit() {
     // Big yarn on the left
     yarnImage = new Image();
     yarnImage.src = "resources/yarn/yarn.png";
+    yarnLossImage = new Image();
+    yarnLossImage.src = "resources/yarn/yarn_loss.png";
 
     // Minotaur images
     minotaurImage = new Image();
@@ -494,19 +497,31 @@ function drawLightingEffects() {
 
 function drawYarn() {
     // Draw yarn graphic -- move it upward as the user loses yarn
+    var percentYarnLeft = yarn * 1.0 / originalYarn;
     var yarnX = (canvas.width - trueFrameRadiusX * CELL_LENGTH) / 8.0;
-    var yarnY = -(yarnImage.height - yarnImage.height * (yarn * 1.0 / originalYarn));
+    var yarnY = -yarnImage.height * (1 - percentYarnLeft);
     ctx.drawImage(
         yarnImage,
         yarnX,
         yarnY
     );
 
-    // Draw numerical yarn amount overtop of the graphic
-    if (showYarnAmount) {
-        ctx.fillStyle = "white";
-        ctx.font="16pt Arial";
-        ctx.fillText(yarn, yarnX, 35);
+    // Draw another yarn graphic visualizing lost yarn
+    if (showYarnAmount && (yarn > yarnTradeAmount)) {
+        var newYarnPercent = (yarn - yarnTradeAmount) * 1.0 / originalYarn;
+        var newYarnY = -yarnImage.height * (1 - newYarnPercent);
+        var diff = newYarnY - yarnY;
+        ctx.drawImage(
+            yarnLossImage,
+            0,
+            yarnLossImage.height + diff,
+            yarnLossImage.width,
+            yarnLossImage.height,
+            yarnX,
+            newYarnY + yarnLossImage.height,
+            yarnLossImage.width,
+            yarnLossImage.height
+        );
     }
 }
 
@@ -701,7 +716,7 @@ function beginMazeNav(difficulty) {
     yarnTradeAmount = Math.floor(originalYarn * YARN_TRADE_PERCENT_OF_ORIGINAL);
     tradeBtn.style.backgroundColor = "#7F0000";
     tradeBtn.style.color = "white";
-    tradeBtn.innerHTML = "Trade " + yarnTradeAmount + " yarn for a hint";
+    tradeBtn.innerHTML = "Trade Yarn for Hint";
 
     // Canvas stuff
     document.body.style.backgroundColor = "black";
