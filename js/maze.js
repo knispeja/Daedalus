@@ -699,6 +699,8 @@ function beginMazeNav(difficulty) {
 
     // Decide yarn trade-in rate and set button text
     yarnTradeAmount = Math.floor(originalYarn * YARN_TRADE_PERCENT_OF_ORIGINAL);
+    tradeBtn.style.backgroundColor = "#7F0000";
+    tradeBtn.style.color = "white";
     tradeBtn.innerHTML = "Trade " + yarnTradeAmount + " yarn for a hint";
 
     // Canvas stuff
