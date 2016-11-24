@@ -1,6 +1,10 @@
-// Special draw enums
+// Enum for both draw and direction enums
+const NONE = 0;
+
+// Special draw enums (0 reserved because it is falsy)
 const USER = 1;
 const MINOTAUR_EYES = 2;
+const TILE_HIGHLIGHT = 3;
 
 // Directional enums
 // NOTE: Although an enum, the order is important as it defines the tileset orientation.
@@ -21,6 +25,8 @@ function oppositeSide(side) {
             return LEFT;
         case LEFT:
             return RIGHT;
+        default:
+            return NONE;
     }
 }
 
@@ -31,10 +37,10 @@ const OBJECTIVE_CELL = "objective";
 
 // Difficulty and gameplay-related constants
 const KRUSKAL_MIN_THRESHOLD = 0.4;
-const MAZE_DIMENSION_MAX = 125; // in cells
+const MAZE_DIMENSION_MAX = 120; // in cells
 const MAZE_DIMENSION_MIN_PERCENT = 0.20;
 const TIME_TO_SHOW_SOLUTION = 14000; // in ms
-const YARN_TRADE_PERCENT_OF_ORIGINAL = 0.2;
+const YARN_TRADE_PERCENT_OF_ORIGINAL = 0.4;
 
 // Quality of life and rendering constants
 const MESSAGE_DURATION = 6500; // in ms
@@ -170,7 +176,7 @@ function Cell(type, x, y, image) {
         this.image = wallTileImage;
     }
 
-    this.drawAt = function(xmod, ymod, specialDraw = false) {
+    this.drawAt = function(xmod, ymod, specialDraw = NONE) {
 
         var defMod = CELL_LENGTH;
         var xOff = (specialDraw === USER) ? 0 : (interpOffset.x * interpOffset.mag);
@@ -210,7 +216,7 @@ function Cell(type, x, y, image) {
             var drawImage = this.image;
             if (specialDraw === MINOTAUR_EYES)
                 drawImage = minotaurEyesImage;
-            else if (showSolution && this.inSolution)
+            else if (specialDraw === TILE_HIGHLIGHT)
                 drawImage = floorTileHighlightImage;
 
             // Draw whatever image this tile is represented by
@@ -222,14 +228,15 @@ function Cell(type, x, y, image) {
                 CELL_LENGTH
             );
 
+            // Return if this is a special case
+            if (specialDraw) return;
+
+            // Additional images on top of drawn tile
             var hasAdditionalContent =
-                specialDraw !== MINOTAUR_EYES && (
                     this.stringImage ||
                     this.containsMinotaur ||
-                    this.isObjective()
-                );
+                    this.isObjective();
 
-            // Additional images on top of the drawn tile
             if (hasAdditionalContent) {
                 if (this.isObjective())
                     addImg = minotaurIsKilled ? openDoorImage : closedDoorImage;
@@ -315,7 +322,7 @@ function imageInit() {
     floorTileImage = new Image();
     floorTileImage.src = "resources/floor/" + floorNum + ".jpg";
     floorTileHighlightImage = new Image();
-    floorTileHighlightImage.src = "resources/floor/" + floorNum + "_highlight.jpg";
+    floorTileHighlightImage.src = "resources/floor/" + floorNum + "_highlight.png";
 }
 
 // Choose an appropriate yarn image from the container
@@ -354,6 +361,18 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
         }
     }
 
+    if (showSolution) {
+        var trueRowStart = userLocation.y - frameRadiusY - 1;
+        if (trueRowStart < 0) trueRowStart = 0;
+        var trueColStart = userLocation.x - frameRadiusX - 1;
+        if (trueColStart < 0) trueColStart = 0;
+
+        var trueRowEnd = userLocation.y + frameRadiusY;
+        if (trueRowEnd >= rows) trueRowEnd = rows - 1;
+        var trueColEnd = userLocation.x + frameRadiusX;
+        if (trueColEnd >= cols) trueColEnd = cols - 1;
+    }
+
     var rowStart = userLocation.y - trueFrameRadiusY - 1;
     if (rowStart < 0) rowStart = 0;
     var colStart = userLocation.x - trueFrameRadiusX - 1;
@@ -364,37 +383,30 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
     var colEnd = userLocation.x + trueFrameRadiusX;
     if (colEnd >= cols) colEnd = cols - 1;
 
+    var solutionDraw = [];
     var userDraw;
     var minotaurDraw;
-    for(var row=rowStart; row<=rowEnd; row++) {
-        for(var col=colStart; col<=colEnd; col++) {
+    for(var row=(showSolution ? trueRowStart : rowStart); row<=(showSolution ? trueRowEnd : rowEnd); row++) {
+        for(var col=(showSolution ? trueColStart : colStart); col<=(showSolution ? trueColEnd : colEnd); col++) {
 
             var cell = maze[row][col];
-            var isUser = false;
-            if (userLocation.x === col && userLocation.y === row) {
-               isUser = true;
+
+            if (showSolution) {
+                if (cell.inSolution && !cell.containsMinotaur) solutionDraw.push(cell);
+                if (row < rowStart || row > rowEnd) continue;
+                if (col < colStart || col > colEnd) continue;
             }
 
-            var x = (col - userLocation.x) + frameRadiusX;
-            var y = (row - userLocation.y) + frameRadiusY;
+            if (userLocation.x === col && userLocation.y === row) userDraw = cell;
+            if (cell.containsMinotaur) minotaurDraw = cell;
 
-            if (isUser) {
-                userDraw = {x: x, y: y, cell: cell};
-            }
-            if (cell.containsMinotaur) {
-                minotaurDraw = {x: x, y: y, cell: cell};
-            }
-
-            cell.drawAt(x, y);
+            drawCellRelativeToUser(cell);
         }
     }
 
-    // Draw the user
-    if(userDraw) userDraw.cell.drawAt(userDraw.x, userDraw.y, USER);
-
     // Draw the minotaur
-    if(minotaurDraw) {
-        minotaurDraw.cell.drawAt(minotaurDraw.x, minotaurDraw.y);
+    if (minotaurDraw) {
+        drawCellRelativeToUser(minotaurDraw);
         if(!seenMinotaur) {
             setMessage("I can hear something breathing...");
             seenMinotaur = true;
@@ -403,6 +415,16 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
 
     // Overlay darkness/torch effects over the scene
     drawLightingEffects();
+
+    // Draw solution
+    if (solutionDraw.length) {
+        for (var i=0; i<solutionDraw.length; i++) {
+            drawCellRelativeToUser(solutionDraw[i], TILE_HIGHLIGHT);
+        }
+    }
+
+    // Draw the user
+    if (userDraw) drawCellRelativeToUser(userDraw, USER);
 
     // Draw minotaur eyes through the darkness
     if (!minotaurIsKilled)
@@ -426,6 +448,14 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
         }
         return;
     }
+}
+
+function drawCellRelativeToUser(cell, special = NONE) {
+    cell.drawAt(
+        cell.x - userLocation.x + frameRadiusX,
+        cell.y - userLocation.y + frameRadiusY, 
+        special
+    );
 }
 
 function drawLightingEffects() {
@@ -556,6 +586,7 @@ function reactToUserInput() {
 
             if (newCell.containsMinotaur) {
                 minotaurIsKilled = true;
+                showSolution = false;
                 newCell.containsMinotaur = false;
                 setMessage("I've slain the Minotaur in just " + stepsTaken + " steps. Time to find my way out.");
             }
@@ -658,6 +689,7 @@ function beginMazeNav(difficulty) {
     // Decide maze dimensions
     var mazeDimPercent = (difficulty < MAZE_DIMENSION_MIN_PERCENT) ? MAZE_DIMENSION_MIN_PERCENT : difficulty;
     mazeDimension = Math.ceil(mazeDimPercent * MAZE_DIMENSION_MAX);
+    mazeDimension = 18;
     
     // Generate maze, use different method depending on difficulty
     if (difficulty <= KRUSKAL_MIN_THRESHOLD)
@@ -743,13 +775,15 @@ function tradeYarn() {
         setMessage("I don't have enough yarn.");
     else if (showSolution)
         setMessage("The path is already revealed. For now, at least...");
+    else if (minotaurIsKilled)
+        setMessage("Strange, the path isn't showing up.");
     else {
         setMessage("The solution is revealed! I must make haste.");
         yarn -= yarnTradeAmount;
         showSolution = true;
         setTimeout(function() {
             showSolution = false;
-            setMessage("That was short-lived.");
+            if (!minotaurIsKilled) setMessage("That was short-lived.");
         }, TIME_TO_SHOW_SOLUTION);
     }
 }
