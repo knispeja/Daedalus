@@ -188,7 +188,7 @@ function generateMaze(method, cols, rows) {
         var cell = newMaze[rows-4][col];
         if(cell.isEmpty()) {
             cell.containsMinotaur = true;
-            objectiveCell = cell;
+            minotaurCell = cell;
             break;
         }
     }

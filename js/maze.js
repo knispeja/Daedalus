@@ -99,7 +99,7 @@ var maze = [];
 var cols;
 var rows;
 var originalLocation = {x:0, y:0};
-var objectiveCell;
+var minotaurCell;
 
 // User-related variables
 var userLocation = {x:0, y:0};
@@ -238,7 +238,7 @@ function Cell(type, x, y, image) {
         );
 
         // Return if this is a special case
-        if (specialDraw) return;
+        if (specialDraw && specialDraw !== TILE_HIGHLIGHT) return;
 
         // Additional images on top of drawn tile
         var hasAdditionalContent =
@@ -426,7 +426,7 @@ function drawMaze(interpolate = false, oldUserLocation = userLocation, recurseCo
     if (userDraw) drawCellRelativeToUser(userDraw, USER);
 
     // Draw minotaur eyes through the darkness
-    if (!minotaurIsKilled) drawCellRelativeToUser(objectiveCell, MINOTAUR_EYES);
+    if (!minotaurIsKilled) drawCellRelativeToUser(minotaurCell, MINOTAUR_EYES);
 
     // Draw yarn graphic off to the left
     drawYarn();
@@ -688,7 +688,7 @@ function remakeMaze(method) {
     updateCanvasSize(false);
 
     maze = generateMaze(method, cols, rows);
-    stepsToMinotaur = solveMaze(false);
+    stepsToMinotaur = solveMaze(minotaurCell);
 }
 
 function beginMazeNav(difficulty) {

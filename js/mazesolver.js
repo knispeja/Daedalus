@@ -44,7 +44,7 @@ function generateGraphForMaze(m = maze) {
     }
 }
 
-function solveMazeWithAStar(startCell, endCell, displayResult) {
+function solveMazeWithAStar(startCell, endCell) {
     var open = [];
     var closed = [];
     open.push(startCell);
@@ -108,10 +108,7 @@ function solveMazeWithAStar(startCell, endCell, displayResult) {
     }
 }
 
-function solveMaze(displayResult = true) {
-
+function solveMaze(objectiveCell) {
     generateGraphForMaze();
-
-    // TODO: save solution if it's already been solved to save time
-    return solveMazeWithAStar(getCellAtUserLocation(), objectiveCell, displayResult);
+    return solveMazeWithAStar(getCellAtUserLocation(), objectiveCell);
 }
