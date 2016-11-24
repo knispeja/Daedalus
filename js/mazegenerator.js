@@ -158,7 +158,7 @@ function generateMaze(method, cols, rows) {
     for(var row=0; row<rows; row++) {
         var newRow = [];
         for(var col=0; col<cols; col++) {
-            newRow.push(makeEmptyCell(col, row));
+            newRow.push(new Cell(EMPTY_CELL, col, row, floorTileImage));
         }
         newMaze.push(newRow);
     }

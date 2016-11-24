@@ -263,10 +263,6 @@ function Cell(type, x, y, image) {
     }
 }
 
-// Convenience functions for creating different cell types
-function makeObjectiveCell(x, y) {return new Cell(OBJECTIVE_CELL, x, y, wallTileImage);}
-function makeEmptyCell(x, y) {return new Cell(EMPTY_CELL, x, y, floorTileImage);}
-
 // Gets the cell the user is in
 function getCellAtUserLocation() {
     return maze[userLocation.y][userLocation.x];
