@@ -41,7 +41,7 @@ const MAZE_DIMENSION_MAX = 120; // in cells
 const MAZE_DIMENSION_MIN_PERCENT = 0.20;
 const TIME_TO_SHOW_SOLUTION = 10000; // in ms
 const YARN_TRADE_PERCENT_OF_ORIGINAL = 0.4;
-const TIME_BEFORE_OFFERING_HINT = 1000; // in ms
+const TIME_BEFORE_OFFERING_HINT = 0; // in ms
 
 // Quality of life and rendering constants
 const MESSAGE_DURATION = 6500; // in ms
