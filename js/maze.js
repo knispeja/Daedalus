@@ -281,8 +281,6 @@ function getCellAtUserLocation() {
 // Updates the size of the canvas
 function updateCanvasSize(redraw = true) {
 
-    onOrientationChange();
-
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -764,6 +762,7 @@ function onOrientationChange(event){
         //ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.resetTransform();
     }
+    updateCanvasSize();
 }
 
 function onMouseMove(event) {
