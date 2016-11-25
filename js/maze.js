@@ -38,6 +38,9 @@ const OBJECTIVE_CELL = "objective";
 // Mathematical constants
 const DEGREES_TO_RADIANS = Math.PI/180;
 
+// Controls
+const DEAD_ZONE_PERCENTAGE_OF_RADIUS = 0.2;
+
 // Difficulty and gameplay-related constants
 const KRUSKAL_MIN_THRESHOLD = 0.4;
 const MAZE_DIMENSION_MAX = 120; // in cells
@@ -96,6 +99,7 @@ var up;
 var down;
 var left;
 var right;
+var mouseDown = false;
 
 // Important maze globals
 var maze = [];
@@ -110,6 +114,8 @@ var userDrawnLocation = {x:0, y:0};
 var directionMoved = BOTTOM;
 
 // Drawing-related
+var deadZoneX;
+var deadZoneY;
 var currentRotation = 0;
 var highQualityMode = true; // same as "!highPerformanceMode" (toggle via ESC)
 var mazeDimension; // height/width of the maze in cells
@@ -290,7 +296,7 @@ function updateCanvasSize(redraw = true) {
         frameRadiusY = Math.ceil(cellsX / 2.0);
     }
     trueFrameRadiusX = trueFrameRadiusY = Math.min(frameRadiusX, frameRadiusY);
-
+    deadZoneX = deadZoneY = trueFrameRadiusX * CELL_LENGTH * DEAD_ZONE_PERCENTAGE_OF_RADIUS;
     if(redraw) drawMaze();
 }
 
@@ -760,6 +766,46 @@ function onOrientationChange(event){
     }
 }
 
+function onMouseMove(event) {
+
+    if (!mouseDown) return;
+
+    up = down = left = right = false;
+    var x, y, mX, mY;
+    if (currentRotation === 0) {
+        x = event.x;
+        y = event.y;
+        mX = canvas.width / 2;
+        mY = canvas.height / 2;
+    } else if (currentRotation === 90) {
+
+    } else if (currentRotation === -90) {
+        
+    } else {
+
+    }
+
+    if (x > mX + deadZoneX) { // Right
+        right = true;
+    } else if (x < mX - deadZoneX) { // Left
+        left = true;
+    if (y < mY - deadZoneY) { // Top
+        up = true;
+    } else if (y > mY + deadZoneY) { // Bottom
+        down = true;
+    }
+}
+
+function onMouseDown(event) {
+    mouseDown = true;
+    onMouseMove(event);
+}
+
+function onMouseUp(event) {
+    mouseDown = false;
+    up = down = left = right = false;
+}
+
 function onKeyDown(event) {
     switch(event.keyCode) {
         case 27:  //escape
@@ -853,7 +899,12 @@ function addEventListeners() {
     window.addEventListener("keydown", onKeyDown, false);
     window.addEventListener("keyup", onKeyUp, false);
 
-    // Button hover/click
+    // Canvas click
+    canvas.addEventListener("mousemove", onMouseMove, false);
+    canvas.addEventListener("mousedown", onMouseDown, false);
+    canvas.addEventListener("mouseup", onMouseUp, false);
+
+    // Button hover and click
     tradeBtn.onclick = tradeYarn;
     tradeBtn.addEventListener("mouseenter", onTradeHover, false);
     tradeBtn.addEventListener("mouseleave", onTradeLeave, false);
