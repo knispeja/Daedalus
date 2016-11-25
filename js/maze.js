@@ -35,6 +35,9 @@ const OBSTACLE_CELL = "obstacle";
 const EMPTY_CELL = "empty";
 const OBJECTIVE_CELL = "objective";
 
+// Mathematical constants
+const DEGREES_TO_RADIANS = Math.PI/180;
+
 // Difficulty and gameplay-related constants
 const KRUSKAL_MIN_THRESHOLD = 0.4;
 const MAZE_DIMENSION_MAX = 120; // in cells
@@ -107,6 +110,7 @@ var userDrawnLocation = {x:0, y:0};
 var directionMoved = BOTTOM;
 
 // Drawing-related
+var currentRotation = 0;
 var highQualityMode = true; // same as "!highPerformanceMode" (toggle via ESC)
 var mazeDimension; // height/width of the maze in cells
 var frameRadiusX;
@@ -270,13 +274,21 @@ function getCellAtUserLocation() {
 
 // Updates the size of the canvas
 function updateCanvasSize(redraw = true) {
+
+    onOrientationChange();
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
     var cellsX = Math.ceil(canvas.width / CELL_LENGTH);
     var cellsY = Math.ceil(canvas.height / CELL_LENGTH);
-    frameRadiusX = Math.ceil(cellsX / 2.0);
-    frameRadiusY = Math.ceil(cellsY / 2.0);
+    if (currentRotation === 0) {
+        frameRadiusX = Math.ceil(cellsX / 2.0);
+        frameRadiusY = Math.ceil(cellsY / 2.0);
+    } else {
+        frameRadiusX = Math.ceil(cellsY / 2.0);
+        frameRadiusY = Math.ceil(cellsX / 2.0);
+    }
     trueFrameRadiusX = trueFrameRadiusY = Math.min(frameRadiusX, frameRadiusY);
 
     if(redraw) drawMaze();
@@ -693,6 +705,9 @@ function remakeMaze(method) {
 
 function beginMazeNav(difficulty) {
 
+    // Hide overflow/scrollbar
+    document.body.style.overflow = "hidden";
+
     // Decide maze dimensions
     var mazeDimPercent = (difficulty < MAZE_DIMENSION_MIN_PERCENT) ? MAZE_DIMENSION_MIN_PERCENT : difficulty;
     mazeDimension = Math.ceil(mazeDimPercent * MAZE_DIMENSION_MAX);
@@ -724,8 +739,25 @@ function beginMazeNav(difficulty) {
 
     // Finalize and start the game
     setMessage("The Minotaur is but " + stepsToMinotaur + " steps away.");
+    onOrientationChange();
     addEventListeners();
     reactToUserInput();
+}
+
+function onOrientationChange(event){
+    ctx.rotate(-currentRotation*DEGREES_TO_RADIANS);
+    if (window.orientation === -90) {       // Landscape counterclockwise
+        ctx.setTransform(1, 0, 0, 1, canvas.width, 0);
+        currentRotation = 90;
+        ctx.rotate(currentRotation*DEGREES_TO_RADIANS);
+    } else if (window.orientation === 90) { // Landscape clockwise
+        ctx.setTransform(1, 0, 0, 1, 0, canvas.height);
+        currentRotation = -90;
+        ctx.rotate(currentRotation*DEGREES_TO_RADIANS);
+    } else {                                // Portrait
+        //ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.resetTransform();
+    }
 }
 
 function onKeyDown(event) {
@@ -813,6 +845,10 @@ function onTradeLeave() {
 }
 
 function addEventListeners() {
+
+    // Device orientation
+    document.addEventListener("orientationchange", onOrientationChange, false);
+
     // Keypresses
     window.addEventListener("keydown", onKeyDown, false);
     window.addEventListener("keyup", onKeyUp, false);
