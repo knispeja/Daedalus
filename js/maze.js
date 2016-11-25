@@ -751,11 +751,11 @@ function beginMazeNav(difficulty) {
 function onOrientationChange(event){
     ctx.rotate(-currentRotation*DEGREES_TO_RADIANS);
     if (window.orientation === -90) {       // Landscape counterclockwise
-        ctx.setTransform(1, 0, 0, 1, canvas.width, 0);
+        ctx.setTransform(1, 0, 0, 1, 0, canvas.height);
         currentRotation = 90;
         ctx.rotate(currentRotation*DEGREES_TO_RADIANS);
     } else if (window.orientation === 90) { // Landscape clockwise
-        ctx.setTransform(1, 0, 0, 1, 0, canvas.height);
+        ctx.setTransform(1, 0, 0, 1, canvas.width, 0);
         currentRotation = -90;
         ctx.rotate(currentRotation*DEGREES_TO_RADIANS);
     } else {                                // Portrait
