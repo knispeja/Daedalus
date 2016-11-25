@@ -785,15 +785,14 @@ function onMouseMove(event) {
 
     }
 
-    if (x > mX + deadZoneX) { // Right
+    if (x > mX + deadZoneX) // Right
         right = true;
-    } else if (x < mX - deadZoneX) { // Left
+    else if (x < mX - deadZoneX) // Left
         left = true;
-    if (y < mY - deadZoneY) { // Top
+    if (y < mY - deadZoneY) // Top
         up = true;
-    } else if (y > mY + deadZoneY) { // Bottom
+    else if (y > mY + deadZoneY) // Bottom
         down = true;
-    }
 }
 
 function onMouseDown(event) {
