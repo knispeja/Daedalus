@@ -286,10 +286,10 @@ function updateCanvasSize(redraw = true) {
 
     var cellsX = Math.ceil(canvas.width / CELL_LENGTH);
     var cellsY = Math.ceil(canvas.height / CELL_LENGTH);
-    if (currentRotation === 0) {
+    if (Math.abs(currentRotation) !== 90) { // Portrait
         frameRadiusX = Math.ceil(cellsX / 2.0);
         frameRadiusY = Math.ceil(cellsY / 2.0);
-    } else {
+    } else { // Landscape
         frameRadiusX = Math.ceil(cellsY / 2.0);
         frameRadiusY = Math.ceil(cellsX / 2.0);
     }
@@ -758,9 +758,12 @@ function onOrientationChange(event){
         ctx.setTransform(1, 0, 0, 1, canvas.width, 0);
         currentRotation = -90;
         ctx.rotate(currentRotation*DEGREES_TO_RADIANS);
-    } else {                                // Portrait
-        //ctx.setTransform(1, 0, 0, 1, 0, 0);
+    } else if (window.orientation === 0) {  // Portrait (normal)
         ctx.resetTransform();
+    } else {                                // Portrait (upside-down)
+        ctx.setTransform(1, 0, 0, 1, canvas.width, canvas.height);
+        currentRotation = 180;
+        ctx.rotate(currentRotation*DEGREES_TO_RADIANS);
     }
     updateCanvasSize();
 }
