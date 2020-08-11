@@ -22,7 +22,7 @@ const LABYRINTH_SYNONYMS = [
     "maze"
 ];
 const INSTRUCTIONS = [
-    "Welcome to Daedalus' Game!<br><b>CLICK</b> to read the tutorial, or press <b>ESCAPE</b> to skip to the quiz.<br><i>(mobile devices currently unsupported)</i>",
+    "Welcome to Daedalus' Game!<br><b>CLICK</b> to read the tutorial, or press <b>ESCAPE</b> to skip to the quiz.",
     "This is a game based on Greek and Roman mythology.",
     "You will first be given a quiz with 10 randomly-selected questions.",
     "Try to get as many as you can correct!<br>A high score will make finishing the game easier.",
