@@ -22,12 +22,12 @@ const LABYRINTH_SYNONYMS = [
     "maze"
 ];
 const INSTRUCTIONS = [
-    "Welcome to Daedalus' Game!<br>Click to continue, or press Escape to skip.",
+    "Welcome to Daedalus' Game!<br><b>CLICK</b> to read the tutorial, or press <b>ESCAPE</b> to skip to the quiz.<br><i>(mobile devices currently unsupported)</i>",
     "This is a game based on Greek and Roman mythology.",
-    "You will first be presented with a quiz with 10 randomly-selected questions.",
-    "Try to get as many as you can correct!<br>Your score determines the difficulty of the subsequent game.",
+    "You will first be given a quiz with 10 randomly-selected questions.",
+    "Try to get as many as you can correct!<br>A high score will make finishing the game easier.",
     "You can skip straight to the game, but beware!<br>Any unanswered questions will be marked incorrect.",
-    "In said game, you play as Theseus.<br>Your goal is to kill the Minotaur then make it back to the entrance of the labyrinth.",
+    "In the game, you play as Theseus.<br>Your goal is to kill the Minotaur then make it back to the entrance of the labyrinth.",
     "Ariadne will grant you thread that will help you find your way back to the entrance.",
     "Are you ready? It's time to take the quiz!"
 ];

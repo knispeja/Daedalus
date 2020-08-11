@@ -81,7 +81,7 @@ var QUESTIONS = function() {
         makeTrueFalseQuestion(
             "Cassandra had the gift of prophecy, but nobody believed her predictions.",
             TRUE,
-            "Apollo cursed Cassandra so because she rejected his love."
+            "Apollo bestowed this curse on her because she rejected his love."
         ),
         makeMultipleChoiceQuestion(
             "What animal did Zeus turn into in order to kidnap Europa?",
@@ -399,7 +399,7 @@ var QUESTIONS = function() {
         makeTrueFalseQuestion(
             "Asclepius is killed by Zeus.",
             TRUE,
-            "Thisiswas a punishment for bringing people back from the dead."
+            "This was a punishment for bringing people back from the dead."
         ),
         makeMultipleChoiceQuestion(
             "How do the Argonauts pass safely by the Sirens?",
