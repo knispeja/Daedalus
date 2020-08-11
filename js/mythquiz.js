@@ -165,6 +165,7 @@ function skipToGame() {
         LABYRINTH_SYNONYMS[randomIndexOf(LABYRINTH_SYNONYMS)] +
         "...";
 
+    nextBtn.style.display = explanationDiv.style.display = HIDE;
     document.getElementById("progress").style.display = HIDE;
     document.getElementById("container").style.display = HIDE;
     tradeBtn = document.getElementById("skip");
